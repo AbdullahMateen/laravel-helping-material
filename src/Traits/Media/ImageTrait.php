@@ -56,7 +56,7 @@ trait ImageTrait
             $image = ImageManager::gd()->read($media);
             $media = ($this->fileCallback)($image) ?? $media;
             if ($media instanceof Image) {
-                $this->setFileMutated($media);
+                $this->fileMutated($media);
             }
         }
         return $this->saveImage($media, $path, $filename, $disk);
@@ -83,8 +83,8 @@ trait ImageTrait
 
         if ($this->getHasThumbnail()) {
             $image = ImageManager::gd()->read($media);
-            if (!is_null($this->fileThumbCallback)) {
-                $media = ($this->fileThumbCallback)($image) ?? $media;
+            if (!is_null($this->thumbnailCallback)) {
+                $media = ($this->thumbnailCallback)($image) ?? $media;
                 if ($media instanceof Image) {
                     $this->thumbnailMutated($media);
                 }
@@ -117,9 +117,9 @@ trait ImageTrait
         $path = trim("$path/$filename", '/');
         return [
             'name' => $filename,
-            'path' => Storage::disk($disk)->path($path),
-            'size' => Storage::disk($disk)->size($path),
-            'url'  => Storage::disk($disk)->url($path),
+            'path' => trim(sprintf("%s/%s", $disk, $path), '/'),                              // Storage::disk($disk)->path($path),
+            'size' => Storage::disk($disk)->size($path !== '' ? "$path/$filename" : $filename),          // Storage::disk($disk)->size($path),
+            'url'  => sprintf("%s/%s", $disk, $path !== '' ? "$path/$filename" : $filename),    // Storage::disk($disk)->url($path),
         ];
     }
 }

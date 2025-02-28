@@ -22,7 +22,7 @@ trait VideoTrait
         }
 
         $mediaInfo = $this->generateVideo($this->getFile(), $path, $disk, $filename);
-        if ($this->getThumbnail()) {
+        if ($this->getHasThumbnail()) {
             // generate thumb
         }
 
@@ -48,10 +48,10 @@ trait VideoTrait
 
         $path = trim("$path/$filename", '/');
         return [
-            'name'  => $filename,
-            'path'  => Storage::disk($disk)->path($path),
-            'size'  => Storage::disk($disk)->size($path),
-            'url'   => Storage::disk($disk)->url($path),
+            'name' => $filename,
+            'path' => trim(sprintf("%s/%s", $disk, $path), '/'),                               // Storage::disk($disk)->path($path),
+            'size' => Storage::disk($disk)->size($path !== '' ? "$path/$filename" : $filename),           // Storage::disk($disk)->size($path),
+            'url'  => sprintf("%s/%s", $disk, $path !== '' ? "$path/$filename" : $filename),    // Storage::disk($disk)->url($path),
         ];
     }
 }
