@@ -1,5 +1,15 @@
 [<img alt="Laravel Helping Material" src="./images/banner.png"/>](./images/banner.png)
 
+<div align="center">
+
+[![Total Downloads](https://img.shields.io/packagist/dt/abdullah-mateen/laravel-helping-metarial.svg)](https://packagist.org/packages/abdullah-mateen/laravel-helping-metarial)
+[![GitHub issues](https://img.shields.io/github/issues/AbdullahMateen/laravel-helping-material.svg)](https://github.com/AbdullahMateen/laravel-helping-material/issues)
+[![GitHub stars](https://img.shields.io/github/stars/AbdullahMateen/laravel-helping-material.svg?style=social)](https://github.com/AbdullahMateen/laravel-helping-material)
+[![GitHub forks](https://img.shields.io/github/forks/AbdullahMateen/laravel-helping-material.svg?style=social)](https://github.com/AbdullahMateen/laravel-helping-material/network)
+[![GitHub watchers](https://img.shields.io/github/watchers/AbdullahMateen/laravel-helping-material.svg?style=social)](https://github.com/AbdullahMateen/laravel-helping-material/watchers)
+
+</div>
+
 # <p align="center">Laravel Helping Material</p>
 
 > This package is a collection of useful tools for Laravel developers. It includes helper functions for common tasks, enums for defining constants, helpful traits for models and controllers, laravel validation rules for custom validations, and a simple media upload library for handling file uploads. This package aims to make Laravel development easier and faster.
