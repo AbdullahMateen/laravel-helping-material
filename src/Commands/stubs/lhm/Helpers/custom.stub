@@ -1,0 +1,624 @@
+<?php
+
+use AbdullahMateen\LaravelHelpingMaterial\Enums\User\AccountStatusEnum;
+use AbdullahMateen\LaravelHelpingMaterial\Enums\User\RoleEnum;
+use App\Models\User;
+use App\Http\Controllers\Auth\LoginController;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+
+/*
+|--------------------------------------------------------------------------
+| Application/System Related Helper Functions
+|--------------------------------------------------------------------------
+*/
+
+/* ==================== Routes ==================== */
+
+if (!function_exists('logout_auth_user')) {
+    /**
+     * @param Request|null $request
+     * @param mixed        $redirectTo
+     *
+     * @return RedirectResponse
+     */
+    function logout_auth_user(Request|null $request = null, mixed $redirectTo = 'index'): RedirectResponse
+    {
+        $redirect = redirect(filter_var($redirectTo, FILTER_VALIDATE_URL) ? $redirectTo : route($redirectTo));
+        try {
+            if (!auth_check()) return $redirect;
+            if (!class_exists('App\Http\Controllers\Auth\LoginController')) return $redirect;
+
+            $redirect = (new LoginController())->logout($request ?? request());
+            clear_intended_url();
+            return $redirect;
+        } catch (Exception) {
+            return $redirect;
+        }
+    }
+}
+
+/* ==================== Storage Link ==================== */
+
+/* This is a testing function, but you can use it as it is if you want. without changing params */
+if (!function_exists('filesystems_setup')) {
+    /**
+     * @param bool        $shared
+     * @param string|null $sharedPath
+     *
+     * @return array{disks: array, links: array}
+     */
+    function filesystems_setup(bool $shared = false, string|null $sharedPath = null): array
+    {
+        $disks  = [];
+        $shared = isset($sharedPath) && $shared;
+
+        if ($shared) {
+            $links[public_path('media/public')] = "$sharedPath/public";
+        } else {
+            $links = [public_path('media/public') => storage_path('app/public')];
+        }
+
+        foreach (MediaDiskEnum::cases() as $enum) {
+            $key   = strtolower($enum->name);
+            $value = $key;
+
+            $disks[$key] = [
+                'driver'     => 'local',
+                'root'       => storage_path("app/$key"),
+                'url'        => app_asset_url() . "/media/$value",
+                'visibility' => 'public',
+            ];
+
+            if ($shared) {
+                $links[public_path("media/$key")] = "$sharedPath/$key";
+            } else {
+                $links[public_path("media/$key")] = storage_path("app/$value");
+            }
+        }
+
+        $disks['public'] = [
+            'driver'     => 'local',
+            'root'       => storage_path('app/public'),
+            'url'        => app_url() . '/media/public',
+            'visibility' => 'public',
+        ];
+
+        return [
+            'disks' => $disks,
+            'links' => $links,
+        ];
+    }
+}
+
+/* ==================== General ==================== */
+
+if (!function_exists('app_logo')) {
+    /**
+     * @param string $logo
+     * @param string $theme
+     *
+     * @return string
+     */
+    function app_logo(string $logo = 'icon', string $theme = 'light'): string
+    {
+        return match ($logo) {
+            'icon'  => asset("assets/images/$theme/logo1.png"),
+            'sm'    => asset("assets/images/$theme/logo2.png"),
+            'lg'    => asset("assets/images/$theme/logo3.png"),
+            'full'  => asset("assets/images/$theme/logo4.png"),
+            'text'  => asset("assets/images/$theme/logo5.png"),
+            default => asset("assets/images/$theme/logo6.png"),
+        };
+    }
+}
+
+if (!function_exists('app_copyright')) {
+    /**
+     * @param string $name
+     *
+     * @return string
+     */
+    function app_copyright(string $name = 'Website'): string
+    {
+        return sprintf('Copyright © %s %s. All rights reserved', now_now()->format('Y'), app_name($name));
+    }
+}
+
+if (!function_exists('app_copyright_long')) {
+    /**
+     * @param string $name
+     *
+     * @return string
+     */
+    function app_copyright_long(string $name = 'Website'): string
+    {
+        return app_copyright($name);
+    }
+}
+
+if (!function_exists('is_api')) {
+    /**
+     * @param Request|null $request
+     * @param string       $header
+     *
+     * @return bool
+     */
+    function is_api(?Request $request = null, string $header = ''): bool
+    {
+        try {
+            $req    = $request ?? request();
+            $header = $header ?? '';
+            return isset($req) && $req->hasHeader($header);
+        } catch (Exception) {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('get_morphs_maps')) {
+    /**
+     * @param string|Model|null $class
+     *
+     * @return false|int|string|string[]
+     */
+    function get_morphs_maps(Model|string $class = null): array|bool|int|string
+    {
+        $maps = [
+            'app' => 'app',
+            // 'user' => User::class,
+        ];
+
+        if (isset($class)) {
+            $class = $class instanceof Model && PHP_VERSION[0] <= 7 ? get_class($class) : $class::class;
+            return array_search($class, $maps);
+        }
+
+        return $maps;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| General Helper Functions
+|--------------------------------------------------------------------------
+*/
+
+/* ==================== Google ==================== */
+
+// if (!function_exists('send_fcm_notification')) {
+//     /**
+//      * @param string $deviceToken
+//      * @param        $notification
+//      * @param array  $data
+//      *
+//      * @return bool|string
+//      */
+//     function send_fcm_notification(string $deviceToken, $notification, array $data = [])
+//     {
+//         $accessToken = config('services.notification.token');
+//         $URL         = config('services.notification.base_url');
+
+//         $keys = '';
+//         foreach ($data['keys'] ?? [] as $key => $value) $keys .= sprintf('"%s": "%s",', $key, is_array($value) ? implode(',', $value) : $value);
+//         $keys = rtrim($keys, ",");
+//         if (!empty($keys)) $keys = ',' . $keys;
+
+//         $post_data = '{
+//            "notification":{
+//               "title":"' . ($notification->title ?? '') . '",
+//               "body":"' . $notification->message . '",
+//               "image":"",
+//               "sound":"default",
+//               "android_channel_id":"fcm_default_channel"
+//            },
+//            "priority":"high",
+//            "data":{
+//               "click_action":"FLUTTER_NOTIFICATION_CLICK",
+//               "notification_id":"' . $notification->id . '",
+//               "model_id":"' . (is_array($notification->model_id) ? implode(',', $notification->model_id) : $notification->model_id) . '",
+//               "key":"' . $notification->for . '"
+//               ' . $keys . '
+//            },
+//            "android":{
+//               "priority":"high",
+//               "notification":{
+//                  "title":"' . ($notification->title ?? '') . '",
+//                  "body":"' . $notification->message . '",
+//                  "sound":"default"
+//               }
+//            },
+//            "apns":{
+//               "aps":{
+//                  "alert":{
+//                     "title":"' . ($notification->title ?? '') . '",
+//                     "body":"' . $notification->message . '"
+//                  },
+//                  "badge":1
+//               },
+//               "headers":{
+//                  "apns-priority":10
+//               },
+//               "payload":{
+//                  "aps":{
+//                     "sound":"default"
+//                  }
+//               },
+//               "fcm_options":{
+//                  "image":""
+//               },
+//               "customKey":"customValue"
+//               ' . $keys . '
+//            },
+//            "time_to_live":3600,
+//            "to":"' . $deviceToken . '"
+//         }';
+
+//         $crl = curl_init();
+
+//         $headers   = [];
+//         $headers[] = 'Content-type: application/json';
+//         $headers[] = 'Authorization: key=' . $accessToken;
+//         curl_setopt($crl, CURLOPT_SSL_VERIFYPEER, false);
+
+//         curl_setopt($crl, CURLOPT_URL, $URL);
+//         curl_setopt($crl, CURLOPT_HTTPHEADER, $headers);
+
+//         curl_setopt($crl, CURLOPT_POST, true);
+//         curl_setopt($crl, CURLOPT_POSTFIELDS, $post_data);
+//         curl_setopt($crl, CURLOPT_RETURNTRANSFER, true);
+
+//         $result = curl_exec($crl);
+
+//         curl_close($crl);
+
+//         return $result;
+//     }
+// }
+
+if (!function_exists('send_fcm_notification')) {
+    /**
+     * @param string $deviceToken
+     * @param        $notification
+     * @param array  $data
+     *
+     * @return bool|string
+     */
+    function send_fcm_notification(string $deviceToken, $notification, array $data = [])
+    {
+        $credentialsFilePath = Storage::path('json/fcm.json');
+        $projectId = json_decode(file_get_contents($credentialsFilePath), true)['project_id'];
+
+        if (!isset($deviceToken, $projectId)) return false;
+
+        $client              = new Google\Client();
+        $client->setAuthConfig($credentialsFilePath);
+        $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+        $client->refreshTokenWithAssertion();
+        $token = $client->getAccessToken();
+
+        $access_token = $token['access_token'];
+        $headers      = [
+            "Authorization: Bearer $access_token",
+            'Content-Type: application/json',
+        ];
+
+        $payload = [
+            "message" => nested_array_filter([
+                'name'         => '', // Output Only. The identifier of the message sent, in the format of projects/*/messages/{message_id}.
+                'topic'        => '', // Topic name to send a message to, e.g. "weather". Note: "/topics/" prefix should not be provided.
+                "token"        => $deviceToken,
+                'condition'    => '', // Condition to send a message to, e.g. "'foo' in topics && 'bar' in topics".
+                "notification" => [
+                    "title" => $notification->title,
+                    "body"  => $notification->message,
+                    "image" => '',
+                ],
+                'data'         => $data, // An object containing a list of "key": value pairs
+                'fcm_options'  => [
+                    'analytics_label' => '', // Label associated with the message's analytics data.
+                ], // https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#FcmOptions
+                'apns'         => [
+                    'headers'     => [
+                        'apns-priority' => "10",
+                    ],
+                    'fcm_options' => [
+                        'analytics_label' => '',
+                        'image'           => '',
+                    ],
+                ], // https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#ApnsConfig
+                'android'      => [
+                    'priority'     => 'high', // https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidMessagePriority
+                    'notification' => [
+                        'color' => '',
+                        'sound' => 'default',
+                        'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+                        'sticky' => null, // bool only
+                    ],
+                    'fcm_options'  => [
+                        'analytics_label' => '',
+                    ],
+                ], // https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#AndroidConfig
+                'webpush'      => [
+                    'headers'     => [
+                        'Urgency' => 'high', // https://datatracker.ietf.org/doc/html/rfc8030#section-5.3
+                        'TTL'     => null, // '3600', // https://datatracker.ietf.org/doc/html/rfc8030#section-5.2
+                    ],
+                    'fcm_options' => [
+                        'analytics_label' => '',
+                        'link'            => '', // The link to open when the user clicks on the notification.
+                    ],
+                ], // https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages#WebpushConfig
+            ]), // https://firebase.google.com/docs/reference/fcm/rest/v1/projects.messages
+        ];
+        $payload = json_encode($payload, JSON_THROW_ON_ERROR);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_VERBOSE, true); // Enable verbose output for debugging
+        $response = curl_exec($ch);
+        $err      = curl_error($ch);
+        curl_close($ch);
+
+        $response = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+        if (isset($err)) {
+            logs()->error('Curl Error: ', ['error' => $err]);
+            return $err;
+        }
+
+        logs()->info('FCM Response: ', ['response' => $response]);
+
+        return $response['error'] ?? true;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| User/Auth/Authorization Related Helper Functions
+|--------------------------------------------------------------------------
+*/
+
+
+/* ==================== Auth/Role ==================== */
+
+if (!function_exists('get_level_from_key')) {
+    /**
+     * @param string $key
+     *
+     * @return null
+     */
+    function get_level_from_key(string $key)
+    {
+        try {
+            return RoleEnum::fromName($key)->value;
+        } catch (Exception $exception) {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('get_role_from_key')) {
+    /**
+     * @param string $key
+     *
+     * @return null
+     */
+    function get_role_from_key(string $key)
+    {
+        try {
+            return RoleEnum::fromName($key)->role();
+        } catch (Exception $exception) {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('get_key_from_level')) {
+    /**
+     * @param string|int $level
+     *
+     * @return null
+     */
+    function get_key_from_level($level)
+    {
+        try {
+            return RoleEnum::tryFrom($level)->name;
+        } catch (Exception $exception) {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('get_role_from_level')) {
+    /**
+     * @param string|int $level
+     *
+     * @return null
+     */
+    function get_role_from_level($level)
+    {
+        try {
+            return RoleEnum::tryFrom($level)->role();
+        } catch (Exception $exception) {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('get_key_from_role')) {
+    /**
+     * @param string $role
+     *
+     * @return null
+     */
+    function get_key_from_role(string $role)
+    {
+        try {
+            return RoleEnum::fromRole($role)->name;
+        } catch (Exception $exception) {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('get_level_from_role')) {
+    /**
+     * @param string $role
+     *
+     * @return null
+     */
+    function get_level_from_role(string $role)
+    {
+        try {
+            return RoleEnum::fromRole($role)->value;
+        } catch (Exception $exception) {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('is_level')) {
+    /**
+     * @param             $level
+     * @param             $user
+     * @param string|null $guard
+     *
+     * @return false
+     */
+    function is_level($level, $user = null, ?string $guard = null): bool
+    {
+        if (!isset($level) || empty($level)) return false;
+
+        try {
+            if (!isset($user)) {
+                $user = auth_user($guard);
+            } else if (is_numeric($user)) {
+                $user = User::find($user);
+            }
+
+            return is_array($level) ? in_array($user->level->value, $level) : $user->level->value == $level;
+        } catch (Exception $exception) {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('device_token')) {
+    /**
+     * @param             $user
+     * @param string|null $guard
+     *
+     * @return string
+     */
+    function device_token($user, ?string $guard = null): string
+    {
+        try {
+            $user = get_user($user, $guard);
+            return $user->device_token ?? '';
+        } catch (Exception $exception) {
+            return '';
+        }
+    }
+}
+
+if (!function_exists('is_super_admin')) {
+    /**
+     * @param             $user
+     * @param string|null $guard
+     *
+     * @return bool
+     */
+    function is_super_admin($user = null, ?string $guard = null): bool
+    {
+        try {
+            $user = get_user($user, $guard);
+            return isset($user) ? is_level(RoleEnum::SuperAdmin->value, $user) : false;
+        } catch (Exception $exception) {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('is_account_blocked')) {
+    /**
+     * @param             $user
+     * @param string|null $guard
+     *
+     * @return bool
+     */
+    function is_account_blocked($user = null, ?string $guard = null): bool
+    {
+        try {
+            $user = get_user($user, $guard);
+            return isset($user) ? AccountStatusEnum::Blocked->equalsTo($user->status->value) : true;
+        } catch (Exception $exception) {
+            return true;
+        }
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Model Related Helper Functions
+|--------------------------------------------------------------------------
+*/
+
+if (!function_exists('model_sync')) {
+    function model_sync($modelId, $relatedIdsWithPivotData, $pivotTable = 'rota_task_items', $foreignKey = 'rota_task_assignment_id', $relatedKey = 'box_id', $detach = true)
+    {
+        // Normalize the input: If it's a simple array of IDs, convert it to an associative array with empty pivot data
+        if (array_values($relatedIdsWithPivotData) === $relatedIdsWithPivotData) {
+            $relatedIdsWithPivotData = array_fill_keys($relatedIdsWithPivotData, []);
+        }
+
+        // Step 1: Fetch current records in the pivot table
+        $currentRecords = DB::table($pivotTable)
+            ->where($foreignKey, $modelId)
+            ->whereNull('status_id')
+            ->whereNull('completed_by')
+            ->pluck($relatedKey)
+            ->toArray();
+
+        // Step 2: Extract the related IDs from the input array
+        $relatedIds = array_keys($relatedIdsWithPivotData);
+
+        // Step 3: Determine records to detach
+        $toDetach = array_diff($currentRecords, $relatedIds);
+
+        // Step 4: Determine records to attach
+        $toAttach = array_diff($relatedIds, $currentRecords);
+
+        // Step 5: Update or Insert records
+        foreach ($relatedIdsWithPivotData as $relatedId => $pivotData) {
+            if (in_array($relatedId, $currentRecords)) {
+                // Update existing pivot data
+                if (!empty($pivotData)) {
+                    DB::table($pivotTable)
+                        ->where($foreignKey, $modelId)
+                        ->where($relatedKey, $relatedId)
+                        ->update(array_merge($pivotData, ['updated_at' => now_now()]));
+                }
+            } elseif (in_array($relatedId, $toAttach)) {
+                // Insert new pivot data
+                $pivotData[$foreignKey] = $modelId;
+                $pivotData[$relatedKey] = $relatedId;
+                DB::table($pivotTable)->insert(array_merge($pivotData, ['created_at' => now_now(), 'updated_at' => now_now()]));
+            }
+        }
+
+        // Step 6: Detach records if necessary
+        if ($detach) {
+            DB::table($pivotTable)
+                ->where($foreignKey, $modelId)
+                ->whereIn($relatedKey, $toDetach)
+                ->delete();
+        }
+    }
+}

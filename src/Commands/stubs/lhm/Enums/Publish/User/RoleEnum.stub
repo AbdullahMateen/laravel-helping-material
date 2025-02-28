@@ -1,6 +1,6 @@
 <?php
 
-namespace AbdullahMateen\LaravelHelpingMaterial\Enums\User;
+namespace App\Enums\User;
 
 use AbdullahMateen\LaravelHelpingMaterial\Interfaces\ColorsInterface;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Enum\GeneralTrait;

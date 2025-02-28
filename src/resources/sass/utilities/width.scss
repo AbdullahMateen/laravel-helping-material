@@ -20,6 +20,16 @@ $widths: "";
   }
 }
 
+$start: 1;
+$end: 100;
+
+$widths: "";
+
+@for $i from $start + 1 through $end {
+  $widths: append($widths, $i, comma);
+  $widths: set-nth($widths, 1, $start);
+}
+
 @each $value in $widths {
   .w-#{$value}p {
     width: #{$value} + '%' !important;

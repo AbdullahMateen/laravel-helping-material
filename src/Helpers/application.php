@@ -1,8 +1,6 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
@@ -64,8 +62,6 @@ if (!function_exists('is_debug_mode')) {
         return config('app.debug', false);
     }
 }
-
-
 
 
 /* ==================== Config ==================== */
@@ -167,8 +163,6 @@ if (!function_exists('app_locale')) {
         return config('app.locale', $default);
     }
 }
-
-
 
 
 /* ==================== Routes ==================== */
@@ -293,29 +287,6 @@ if (!function_exists('clear_intended_url')) {
     }
 }
 
-if (!function_exists('logout_auth_user')) {
-    /**
-     * @param Request|null $request
-     * @param mixed        $redirectTo
-     *
-     * @return RedirectResponse
-     */
-    function logout_auth_user(Request|null $request = null, mixed $redirectTo = 'index'): RedirectResponse
-    {
-        $redirect = redirect(filter_var($redirectTo, FILTER_VALIDATE_URL) ? $redirectTo : route($redirectTo));
-        try {
-            if (!auth_check()) {
-                return $redirect;
-            }
-            $redirect = (new LoginController())->logout($request ?? request());
-            clear_intended_url();
-            return $redirect;
-        } catch (Exception) {
-            return $redirect;
-        }
-    }
-}
-
 if (!function_exists('goto_route_encrypt')) {
     /**
      * @param string $routeName
@@ -352,8 +323,6 @@ if (!function_exists('goto_route_decrypt')) {
         }
     }
 }
-
-
 
 
 /* ==================== General ==================== */
@@ -429,47 +398,6 @@ if (!function_exists('email_subject')) {
     }
 }
 
-if (!function_exists('is_api')) {
-    /**
-     * @param Request|null $request
-     * @param string       $header
-     *
-     * @return bool
-     */
-    function is_api(?Request $request = null, string $header = ''): bool
-    {
-        try {
-            $req    = $request ?? request();
-            $header = $header ?? '';
-            return isset($req) && $req->hasHeader($header);
-        } catch (Exception) {
-            return false;
-        }
-    }
-}
-
-if (!function_exists('get_morphs_maps')) {
-    /**
-     * @param string|Model|null $class
-     *
-     * @return false|int|string|string[]
-     */
-    function get_morphs_maps(Model|string $class = null): array|bool|int|string
-    {
-        $maps = [
-            'app' => 'app',
-            // 'user' => User::class,
-        ];
-
-        if (isset($class)) {
-            $class = $class instanceof Model && PHP_VERSION[0] <= 7 ? get_class($class) : $class::class;
-            return array_search($class, $maps);
-        }
-
-        return $maps;
-    }
-}
-
 if (!function_exists('get_model_table')) {
     /**
      * @param string|Model $model
@@ -486,5 +414,35 @@ if (!function_exists('get_model_table')) {
         } catch (Exception) {
             return null;
         }
+    }
+}
+
+if (!function_exists('get_model_from_table')) {
+    function get_model_from_table(string $tableName)
+    {
+        // Specify the namespace where your models are located
+        $namespace = 'App\\Models\\';
+
+        // Get all model files from the Models directory
+        $modelFiles = \Illuminate\Support\Facades\File::allFiles(app_path('Models'));
+
+        foreach ($modelFiles as $file) {
+            // Get the fully qualified class name
+            $class = $namespace . $file->getRelativePathname(); // pathinfo($file->getFilename(), PATHINFO_FILENAME);
+            $class = str_replace('.php', '', $class);
+
+            // Ensure the class exists and is an Eloquent model
+            if (class_exists($class) && is_subclass_of($class, \Illuminate\Database\Eloquent\Model::class)) {
+                $model = new $class;
+
+                // Check if the model's table matches the given table name
+                if ($model->getTable() === $tableName) {
+                    return $class;
+                }
+            }
+        }
+
+        // Return null if no model is found
+        return null;
     }
 }

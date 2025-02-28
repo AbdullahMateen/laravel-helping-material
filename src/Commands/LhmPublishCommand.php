@@ -44,12 +44,13 @@ class LhmPublishCommand extends Command
         $options = [
             'All',
             'Enums          => Copy enum files',
+            'Exceptions     => Copy exceptions files',
             'Helpers        => Copy helper files',
-            'Interfaces     => Copy interface files',
+            // 'Interfaces     => Copy interface files',
             'Middlewares    => Override middleware',
-            'Migrations     => Copy migrations',
+            // 'Migrations     => Copy migrations',
             'Models         => Override model files',
-            'Rules          => Override rule files',
+            // 'Rules          => Override rule files',
             'Services       => Override service files',
             'Traits         => Override trait files',
             'Resources      => Copy resources',
@@ -63,7 +64,7 @@ class LhmPublishCommand extends Command
             true
         ));
 
-        $values = array_map(fn ($value) => trim(explode('=>', $value)[0]), $values);
+        $values     = array_map(fn ($value) => trim(explode('=>', $value)[0]), $values);
         $publishAll = in_array('All', $values, true);
         if ($publishAll) {
             $options = array_map(fn ($option) => trim(explode('=>', $option)[0]), $options);
@@ -83,100 +84,80 @@ class LhmPublishCommand extends Command
     public function publishEnums()
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Enums/Media'));
-        $this->filesystem->copy("$this->prefix/stubs/Enums/Media/MediaDiskEnum.stub", base_path('app/Enums/Media/MediaDiskEnum.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Enums/Media/MediaDiskEnum.stub", base_path('app/Enums/Media/MediaDiskEnum.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Enums/Media/MediaTypeEnum.stub", base_path('app/Enums/Media/MediaTypeEnum.php'));
+        $this->filesystem->copy("stubs/lhm/Enums/Publish/Media/MediaDiskEnum.stub", base_path('app/Enums/Media/MediaDiskEnum.php'));
 
         $this->filesystem->ensureDirectoryExists(base_path('app/Enums/User'));
-        $this->filesystem->copy("$this->prefix/stubs/Enums/User/AccountStatusEnum.stub", base_path('app/Enums/User/AccountStatusEnum.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Enums/User/GenderEnum.stub", base_path('app/Enums/User/GenderEnum.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Enums/User/RoleEnum.stub", base_path('app/Enums/User/RoleEnum.php'));
-
-        $this->filesystem->ensureDirectoryExists(base_path('app/Enums'));
-        $this->filesystem->copy("$this->prefix/stubs/Enums/StatusEnum.stub", base_path('app/Enums/StatusEnum.php'));
+        $this->filesystem->copy("stubs/lhm/Enums/Publish/User/RoleEnum.stub", base_path('app/Enums/User/RoleEnum.php'));
 
         return base_path('app/Enums');
+    }
+
+    public function publishExceptions()
+    {
+        $this->filesystem->ensureDirectoryExists(base_path('app/Exceptions'));
+        $this->filesystem->copy("stubs/lhm/Exceptions/ApiResponseExceptionHandler.stub", base_path('app/Exceptions/ApiResponseExceptionHandler.php'));
+
+        return base_path('app/Exceptions');
     }
 
     public function publishHelpers()
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Helpers'));
-        $this->filesystem->copy("$this->prefix/stubs/Helpers/application.stub", base_path('app/Helpers/application.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Helpers/files.stub", base_path('app/Helpers/files.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Helpers/general.stub", base_path('app/Helpers/general.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Helpers/helpers.stub", base_path('app/Helpers/helpers.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Helpers/packages.stub", base_path('app/Helpers/packages.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Helpers/user.stub", base_path('app/Helpers/user.php'));
+        $this->filesystem->copy("stubs/lhm/Helpers/custom.stub", base_path('app/Helpers/custom.php'));
+
         return base_path('app/Helpers');
     }
 
     public function publishInterfaces()
     {
-        $this->filesystem->ensureDirectoryExists(base_path('app/Interfaces'));
-        $this->filesystem->copy("$this->prefix/stubs/Interfaces/ColorsInterface.stub", base_path('app/Interfaces/ColorsInterface.php'));
-        return base_path('app/Interfaces');
+        // $this->filesystem->ensureDirectoryExists(base_path('app/Interfaces'));
+        // $this->filesystem->copy("$this->prefix/stubs/Interfaces/ColorsInterface.stub", base_path('app/Interfaces/ColorsInterface.php'));
+        // return base_path('app/Interfaces');
     }
 
     public function publishMiddlewares()
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Http/Middleware/Custom'));
-        $this->filesystem->copy("$this->prefix/stubs/Middleware/Custom/AuthorizationMiddleware.stub", base_path('app/Http/Middleware/Custom/AuthorizationMiddleware.php'));
+        $this->filesystem->copy("stubs/lhm/Middleware/AuthorizationMiddleware.stub", base_path('app/Http/Middleware/AuthorizationMiddleware.php'));
+
         return base_path('app/Http/Middleware/Custom');
     }
 
     public function publishMigrations()
     {
-        $this->filesystem->ensureDirectoryExists(base_path('database/migrations'));
-        $this->filesystem->copyDirectory("$this->prefix/src/migrations/", base_path('database/migrations/'));
-        return base_path('database/migrations');
+        // $this->filesystem->ensureDirectoryExists(base_path('database/migrations'));
+        // $this->filesystem->copyDirectory("$this->prefix/src/migrations/", base_path('database/migrations/'));
+        // return base_path('database/migrations');
     }
 
     public function publishModels()
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Models'));
-        $this->filesystem->copy("$this->prefix/stubs/Models/ExtendedModel.stub", base_path('app/Models/ExtendedModel.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Models/Media.stub", base_path('app/Models/Media.php'));
+        $this->filesystem->copy("stubs/lhm/Models/ExtendedModel.stub", base_path('app/Models/ExtendedModel.php'));
+        $this->filesystem->copy("stubs/lhm/Models/Media.stub", base_path('app/Models/Media.php'));
+
         return base_path('app/Models');
     }
 
     public function publishRules()
     {
-        $this->filesystem->ensureDirectoryExists(base_path('app/Rules'));
-        $this->filesystem->copy("$this->prefix/stubs/Rules/Throttle.stub", base_path('app/Rules/Throttle.php'));
-        return base_path('app/Rules');
+        // $this->filesystem->ensureDirectoryExists(base_path('app/Rules'));
+        // $this->filesystem->copy("$this->prefix/stubs/Rules/Throttle.stub", base_path('app/Rules/Throttle.php'));
+        // return base_path('app/Rules');
     }
 
     public function publishServices()
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Services/Media'));
-        $this->filesystem->copy("$this->prefix/stubs/Services/Media/MediaService.stub", base_path('app/Services/Media/MediaService.php'));
+        $this->filesystem->copy("stubs/lhm/Services/Media/MediaService.stub", base_path('app/Services/Media/MediaService.php'));
+
         return base_path('app/Services');
     }
 
     public function publishTraits()
     {
-        $this->filesystem->ensureDirectoryExists(base_path('app/Traits/Api'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/Api/ApiExceptionHandlerTrait.stub", base_path('app/Traits/Api/ApiExceptionHandlerTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/Api/ApiResponseTrait.stub", base_path('app/Traits/Api/ApiResponseTrait.php'));
-
-        $this->filesystem->ensureDirectoryExists(base_path('app/Traits/General/Enum'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/General/Enum/GeneralTrait.stub", base_path('app/Traits/General/Enum/GeneralTrait.php'));
-
         $this->filesystem->ensureDirectoryExists(base_path('app/Traits/General/Model'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/General/Model/AuthorizationTrait.stub", base_path('app/Traits/General/Model/AuthorizationTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/General/Model/EncryptableTrait.stub", base_path('app/Traits/General/Model/EncryptableTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/General/Model/ModelFetchTrait.stub", base_path('app/Traits/General/Model/ModelFetchTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/General/Model/ScopeTrait.stub", base_path('app/Traits/General/Model/ScopeTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/General/Model/UserNotificationsTrait.stub", base_path('app/Traits/General/Model/UserNotificationsTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/General/Model/ValidationRulesTrait.stub", base_path('app/Traits/General/Model/ValidationRulesTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/General/Model/ValidationTrait.stub", base_path('app/Traits/General/Model/ValidationTrait.php'));
-
-        $this->filesystem->ensureDirectoryExists(base_path('app/Traits/Media'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/Media/ArchiveTrait.stub", base_path('app/Traits/Media/ArchiveTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/Media/AudioTrait.stub", base_path('app/Traits/Media/AudioTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/Media/DocumentTrait.stub", base_path('app/Traits/Media/DocumentTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/Media/ImageTrait.stub", base_path('app/Traits/Media/ImageTrait.php'));
-        $this->filesystem->copy("$this->prefix/stubs/Traits/Media/VideoTrait.stub", base_path('app/Traits/Media/VideoTrait.php'));
+        $this->filesystem->copy("stubs/lhm/Traits/General/Model/UserNotificationsTrait.stub", base_path('app/Traits/General/Model/UserNotificationsTrait.php'));
 
         return base_path('app/Traits');
     }
@@ -185,6 +166,7 @@ class LhmPublishCommand extends Command
     {
         $this->filesystem->ensureDirectoryExists(base_path('resources/sass/'));
         $this->filesystem->copyDirectory("$this->prefix/src/resources/sass/", base_path('resources/sass/'));
+
         return base_path('resources/sass');
     }
 

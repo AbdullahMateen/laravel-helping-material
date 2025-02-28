@@ -2,9 +2,19 @@
 
 namespace AbdullahMateen\LaravelHelpingMaterial\Traits\Api;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Routing\Exceptions\BackedEnumCaseNotFoundException;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Exception\RequestExceptionInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 //use Tymon\JWTAuth\Exceptions\JWTException;
 //use Tymon\JWTAuth\Exceptions\TokenExpiredException;
@@ -31,13 +41,23 @@ trait ApiExceptionHandlerTrait
 //            return $this->response(Response::HTTP_BAD_REQUEST, 'Auth token not found', []);
 //        }
         if ($exception instanceof ModelNotFoundException) {
-            return $this->response(Response::HTTP_NOT_FOUND, 'Record not found', []);
+            return response()->response(Response::HTTP_NOT_FOUND, 'Record not found', []);
         }
 
         $exception = $this->prepareException($exception);
 
         if ($exception instanceof HttpResponseException) {
             $exception = $exception->getResponse();
+        }
+
+        if ($exception instanceof \Error) {
+            $this->message = 'The requested resource was not found.';
+        }
+
+        if ($exception instanceof NotFoundHttpException) {
+            // $exception = new NotFoundHttpException('The requested resource was not found.', $exception);
+            // return response()->response(Response::HTTP_NOT_FOUND, 'The requested page could not be found. Please check the URL or try again later.', []);
+            $this->message = 'The requested resource was not found.';
         }
 
         if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
@@ -49,6 +69,39 @@ trait ApiExceptionHandlerTrait
         }
 
         return $this->customApiResponse($exception);
+    }
+
+    protected function prepareException(Throwable $e)
+    {
+        return match (true) {
+            $e instanceof BackedEnumCaseNotFoundException            => new NotFoundHttpException($e->getMessage(), $e),
+            $e instanceof ModelNotFoundException                     => new NotFoundHttpException($e->getMessage(), $e),
+            $e instanceof AuthorizationException && $e->hasStatus()  => new HttpException(
+                $e->status(), $e->response()?->message() ?: (\Illuminate\Http\Response::$statusTexts[$e->status()] ?? 'Whoops, looks like something went wrong.'), $e
+            ),
+            $e instanceof AuthorizationException && !$e->hasStatus() => new AccessDeniedHttpException($e->getMessage(), $e),
+            $e instanceof TokenMismatchException                     => new HttpException(419, $e->getMessage(), $e),
+            $e instanceof RequestExceptionInterface                  => new BadRequestHttpException('Bad request.', $e),
+            $e instanceof RecordsNotFoundException                   => new NotFoundHttpException('Not found.', $e),
+            default                                                  => $e,
+        };
+    }
+
+    private function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception)
+    {
+        return response()->json(['message' => $exception->getMessage()], 401);
+    }
+
+    private function convertValidationExceptionToResponse(ValidationException $e, $request)
+    {
+        if ($e->response) {
+            return $e->response;
+        }
+
+        return response()->json([
+            'message' => $e->getMessage(),
+            'errors'  => $e->errors(),
+        ], $e->status);
     }
 
     private function customApiResponse($exception)
@@ -91,6 +144,6 @@ trait ApiExceptionHandlerTrait
         $this->errors = (isset($this->errors) && !empty($this->errors)) ? $this->errors : $response['errors'] ?? [];
         $this->source = exception_response($exception);
 
-        return $this->response($this->status_code, $this->message, [], $this->errors ?? [], $this->source);
+        return response()->response($this->status_code, $this->message, [], $this->errors ?? [], $this->source);
     }
 }

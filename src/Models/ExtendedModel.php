@@ -7,19 +7,23 @@ use AbdullahMateen\LaravelHelpingMaterial\Interfaces\ColorsInterface;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\AuthorizationTrait;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\ModelFetchTrait;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\ScopeTrait;
+use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\ValidationRulesHelperTrait;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\ValidationTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * @method static columns()
  * @method static auth()
+ * @method static byUser()
+ * @method static byLevel()
  * @method static whereDateBetween()
  * @method static active()
  * @method static inactive()
+ * @method static blocked()
  */
 class ExtendedModel extends Model implements ColorsInterface
 {
-    use AuthorizationTrait, ModelFetchTrait, ScopeTrait, ValidationTrait;
+    use AuthorizationTrait, ModelFetchTrait, ScopeTrait, ValidationTrait, ValidationRulesHelperTrait;
 
     /*
     |--------------------------------------------------------------------------
@@ -30,7 +34,7 @@ class ExtendedModel extends Model implements ColorsInterface
     protected $guarded = [];
 
     protected $casts = [
-        'status' => 'integer',
+        'status' => StatusEnum::class,
     ];
 
     /*

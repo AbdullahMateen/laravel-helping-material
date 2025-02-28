@@ -1,0 +1,13 @@
+<?php
+
+namespace {{ namespace }};
+
+use AbdullahMateen\LaravelHelpingMaterial\Interfaces\ColorsInterface;
+use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Enum\GeneralTrait;
+
+enum {{ class }}: {{ type }} implements ColorsInterface
+{
+    use GeneralTrait;
+
+    //
+}

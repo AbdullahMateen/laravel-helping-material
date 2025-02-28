@@ -20,6 +20,16 @@ $heights: "";
   }
 }
 
+$start: 1;
+$end: 100;
+
+$heights: "";
+
+@for $i from $start + 1 through $end {
+  $heights: append($heights, $i, comma);
+  $heights: set-nth($heights, 1, $start);
+}
+
 @each $value in $heights {
   .h-#{$value}p {
     height: #{$value} + '%' !important;

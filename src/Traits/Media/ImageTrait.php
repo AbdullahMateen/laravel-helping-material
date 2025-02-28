@@ -29,7 +29,7 @@ trait ImageTrait
         }
 
         $mediaInfo = $this->generateImage($file, $path, $disk, $filename);
-        if ($this->getThumbnail()) {
+        if ($this->getHasThumbnail()) {
             $thumbInfo = $this->generateImageThumb($file, $path, $disk, $filename);
         }
 
@@ -75,22 +75,22 @@ trait ImageTrait
     {
         $filename = "thumb_$filename";
 
-        if (!($media instanceof Image) && $this->getThumbnail()) {
+        if (!($media instanceof Image) && $this->getHasThumbnail()) {
             $media           = ImageManager::gd()->read($media);
             $media           = $media->scale(200, 200);
-            $this->fileThumb = $media;
+            $this->thumbnail = $media;
         }
 
-        if ($this->getThumbnail()) {
+        if ($this->getHasThumbnail()) {
             $image = ImageManager::gd()->read($media);
             if (!is_null($this->fileThumbCallback)) {
                 $media = ($this->fileThumbCallback)($image) ?? $media;
                 if ($media instanceof Image) {
-                    $this->setFileThumb($media);
+                    $this->thumbnailMutated($media);
                 }
             } else {
                 $media = $media->scale(200, 200);
-                $this->setFileThumb($media);
+                $this->thumbnailMutated($media);
             }
         }
 

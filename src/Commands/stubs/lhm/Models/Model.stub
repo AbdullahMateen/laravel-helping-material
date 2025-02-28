@@ -1,12 +1,14 @@
 <?php
 
-namespace AbdullahMateen\LaravelHelpingMaterial\Models;
+namespace {{ namespace }};;
 
-use AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaDiskEnum;
-use AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaTypeEnum;
+use AbdullahMateen\LaravelHelpingMaterial\Models\ExtendedModel;
+use AbdullahMateen\LaravelHelpingMaterial\Enums\StatusEnum;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Media extends ExtendedModel
+class {{ class }} extends ExtendedModel
 {
+    use HasFactory;
 
     /*
     |--------------------------------------------------------------------------
@@ -15,9 +17,10 @@ class Media extends ExtendedModel
     */
 
     protected $casts = [
-        'group' => MediaDiskEnum::class,
-        'category' => MediaTypeEnum::class
+        'status' => StatusEnum::class,
     ];
+
+    protected $guarded = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -25,27 +28,35 @@ class Media extends ExtendedModel
     |--------------------------------------------------------------------------
     */
 
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Contracts / Traits
+    |--------------------------------------------------------------------------
+    */
+
     public static function boot()
     {
-        static::creating(function ($self) {
-             unset($self->status);
+        static::creating(function ({{ class }} $self) {
+            // unset($self->status);
         });
 
         parent::boot();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Contracts / Traits methods
-    |--------------------------------------------------------------------------
-    */
-
+    public function __construct(array $attributes = [])
+    {
+        $this->setRawAttributes(array_merge($this->attributes, []), true);
+        parent::__construct($attributes);
+    }
 
     /*
     |--------------------------------------------------------------------------
     | Const Variables
     |--------------------------------------------------------------------------
     */
+
 
 
     /*
@@ -55,11 +66,13 @@ class Media extends ExtendedModel
     */
 
 
+
     /*
     |--------------------------------------------------------------------------
     | Authorization
     |--------------------------------------------------------------------------
     */
+
 
 
     /*
@@ -69,11 +82,13 @@ class Media extends ExtendedModel
     */
 
 
+
     /*
     |--------------------------------------------------------------------------
     | Mutators
     |--------------------------------------------------------------------------
     */
+
 
 
     /*
@@ -83,11 +98,13 @@ class Media extends ExtendedModel
     */
 
 
+
     /*
     |--------------------------------------------------------------------------
     | Helper Functions
     |--------------------------------------------------------------------------
     */
+
 
 
     /*
@@ -96,8 +113,6 @@ class Media extends ExtendedModel
     |--------------------------------------------------------------------------
     */
 
-    public function mediaable()
-    {
-        return $this->morphTo();
-    }
+
+
 }

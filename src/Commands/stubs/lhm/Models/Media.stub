@@ -1,11 +1,12 @@
 <?php
 
-namespace AbdullahMateen\LaravelHelpingMaterial\Models;
+namespace App\Models;
 
 use AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaDiskEnum;
 use AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaTypeEnum;
+use AbdullahMateen\LaravelHelpingMaterial\Models\Media as BaseModel;
 
-class Media extends ExtendedModel
+class Media extends BaseModel
 {
 
     /*
@@ -15,7 +16,7 @@ class Media extends ExtendedModel
     */
 
     protected $casts = [
-        'group' => MediaDiskEnum::class,
+        'group'    => MediaDiskEnum::class,
         'category' => MediaTypeEnum::class
     ];
 
@@ -25,14 +26,6 @@ class Media extends ExtendedModel
     |--------------------------------------------------------------------------
     */
 
-    public static function boot()
-    {
-        static::creating(function ($self) {
-             unset($self->status);
-        });
-
-        parent::boot();
-    }
 
     /*
     |--------------------------------------------------------------------------
@@ -96,8 +89,5 @@ class Media extends ExtendedModel
     |--------------------------------------------------------------------------
     */
 
-    public function mediaable()
-    {
-        return $this->morphTo();
-    }
+
 }

@@ -5,13 +5,13 @@ namespace AbdullahMateen\LaravelHelpingMaterial\Enums\User;
 use AbdullahMateen\LaravelHelpingMaterial\Interfaces\ColorsInterface;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Enum\GeneralTrait;
 
-enum GenderEnum: string implements ColorsInterface
+enum GenderEnum: int implements ColorsInterface
 {
     use GeneralTrait;
 
-    case Male = 'm';
-    case Female = 'f';
-    case Other = 'o';
+    case Male = 1;
+    case Female = 2;
+    case Other = 3;
 
     /**
      * @return string

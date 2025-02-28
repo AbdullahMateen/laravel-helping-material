@@ -4,7 +4,7 @@ namespace AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model;
 
 trait UserNotificationsTrait
 {
-    /* Todo:  need o sort out things */
+    /* Todo:  need to sort out things */
 
     /*
     |--------------------------------------------------------------------------
@@ -32,11 +32,20 @@ trait UserNotificationsTrait
     |--------------------------------------------------------------------------
     */
 
-//    public function notifyMobile($body = '', $title = null)
+//    public function notifyMobile($notification, array $data = [])
 //    {
-//        $title ??= app_name() . ' Notification';
-//        $data  = ['title' => $title, 'body' => $body];
-//        if (isset($this->device_token)) send_device_notification($this->device_token, $data);
+//        if (!$this->push_notifications) return;
+//        $deviceToken = $this->getDeviceToken();
+//        if (isset($deviceToken)) {
+//            $result = send_fcm_notification($deviceToken, $notification, $data);
+//            if ($result === true) {
+//                $notification->update(['send_at' => now_now()]);
+//            } elseif ($result === false) {
+//                $notification->update(['exception' => 'Failed to send notification, device token/fcm project id not set']);
+//            } else {
+//                $notification->update(['exception' => $result]);
+//            }
+//        }
 //    }
 
 
@@ -50,8 +59,19 @@ trait UserNotificationsTrait
 //    {
 //        $title    ??= app_name() . ' Notification';
 //        $senderId = auth_check() ? auth_id() : null;
-//        $status   = \App\Enums\Notification\StatusEnum::UnRead;
+//        $status   = StatusEnum::UnRead->value;
 //        return notification_create($this->id, $title, $body, $senderId, $model, $data, $type, $status);
+//        return Notification::create([
+//            'sender_id'       => $senderId,
+//            'receiver_id'     => $this->id,
+//            'notifiable_type' => isset($model) ? get_morphs_maps($model::class) : $model,
+//            'notifiable_id'   => isset($model) ? $model->id : null,
+//            'type'            => $type,
+//            'title'           => $title,
+//            'body'            => $body,
+//            'data'            => $data,
+//            'status'          => $status,
+//        ]);
 //    }
 
 }

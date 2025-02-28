@@ -72,39 +72,40 @@ trait ApiResponseTrait
 
     private function prepareResponseData(bool $success, $response_code, $message, $data, $errors, $source)
     {
-        $response = [];
-        $response['code'] = $response_code;
-        $response['success'] = $success ? 1 : 0;
-        $response['message'] = $this->responseStatusText($response_code);
+        $response                = [];
+        $response['code']        = $response_code;
+        $response['success']     = $success ? 1 : 0;
+        $response['message']     = $this->responseStatusText($response_code);
         $response['description'] = $response_code == Response::HTTP_UNPROCESSABLE_ENTITY
             ? implode("\n", array_unique(array_flatten($errors)))
             : $message;
-        $response['data'] = $data;
+        $response['data']        = config('lhm.api.convert_keys_to_snake_case') ? array_keys_to_snake_case($data) : $data;
 
         if ($response_code !== Response::HTTP_OK) {
             $response['exception'] = $source;
-            $response['errors'] = count($errors) || $response_code == Response::HTTP_UNPROCESSABLE_ENTITY
+            $response['errors']    = count($errors) || $response_code == Response::HTTP_UNPROCESSABLE_ENTITY
                 ? $errors // implode("\n", array_unique(array_flatten($errors)))
                 : $message;
         }
 
         return $response;
 
-//        $response = [];
-//        $response['success'] = $success ? 1 : 0;
-//        $response['response_code'] = $response_code;
-//        $response['message'] = $response_code == Response::HTTP_UNPROCESSABLE_ENTITY
-//            ? implode("\n", array_unique(array_flatten($errors)))
-//            : $message;
-//        $response['data'] = $data;
-//
-//        return $response;
+        //        $response = [];
+        //        $response['success'] = $success ? 1 : 0;
+        //        $response['response_code'] = $response_code;
+        //        $response['message'] = $response_code == Response::HTTP_UNPROCESSABLE_ENTITY
+        //            ? implode("\n", array_unique(array_flatten($errors)))
+        //            : $message;
+        //        $response['data'] = $data;
+        //
+        //        return $response;
     }
 
     private function responseStatusText($code)
     {
-        $statusTexts = Response::$statusTexts;
+        $statusTexts        = Response::$statusTexts;
         $statusTexts['419'] = 'Token Mismatch';
+        $statusTexts['422'] = 'Invalid data provided.';
 
         return $statusTexts[$code];
     }

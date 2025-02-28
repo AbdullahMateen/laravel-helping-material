@@ -1,6 +1,6 @@
 <?php
 
-namespace AbdullahMateen\LaravelHelpingMaterial\Middleware\Custom;
+namespace AbdullahMateen\LaravelHelpingMaterial\Middleware;
 
 use AbdullahMateen\LaravelHelpingMaterial\Enums\User\RoleEnum;
 use Closure;

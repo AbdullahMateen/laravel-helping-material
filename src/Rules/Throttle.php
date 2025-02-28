@@ -4,150 +4,76 @@ namespace AbdullahMateen\LaravelHelpingMaterial\Rules;
 
 use Closure;
 use Illuminate\Cache\RateLimiter;
-use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\Request;
 
-if (class_exists('Illuminate\Contracts\Validation\ValidationRule')) {
-    class Throttle implements ValidationRule
+class Throttle implements ValidationRule
+{
+    protected $rule = 'limiter';
+
+    protected $key = 'validation';
+
+    protected $maxAttempts = 5;
+
+    protected $decayInMinutes = 10;
+
+    protected $message = 'Too many attempts. Please try again later.';
+
+    public function __construct($key = 'validation', $maxAttempts = 5, $decayInMinutes = 10, $message = 'Too many attempts. Please try again later.')
     {
-        protected $rule = 'limiter';
-
-        protected $key = 'validation';
-
-        protected $maxAttempts = 5;
-
-        protected $decayInMinutes = 10;
-
-        protected $message = 'Too many attempts. Please try again later.';
-
-        public function __construct($key = 'validation', $maxAttempts = 5, $decayInMinutes = 10, $message = 'Too many attempts. Please try again later.')
-        {
-            $this->key = $key;
-            $this->maxAttempts = $maxAttempts;
-            $this->decayInMinutes = $decayInMinutes;
-            $this->message = $message;
-        }
-
-        public function validate(string $attribute, mixed $value, Closure $fail): void
-        {
-            if (!$this->passes($attribute, $value)) $fail($this->message());
-        }
-
-        public function passes($attribute, $value)
-        {
-            if ($this->hasTooManyAttempts()) {
-                return false;
-            }
-
-            $this->incrementAttempts();
-
-            return true;
-        }
-
-        public function message()
-        {
-            return __($this->message);
-        }
-
-        protected function hasTooManyAttempts()
-        {
-            return $this->limiter()->tooManyAttempts(
-                $this->throttleKey(), $this->maxAttempts
-            );
-        }
-
-        protected function incrementAttempts()
-        {
-            $this->limiter()->hit(
-                $this->throttleKey(), $this->decayInMinutes * 60
-            );
-        }
-
-        protected function throttleKey()
-        {
-            return $this->key . '|' . $this->request()->ip();
-        }
-
-        protected function limiter()
-        {
-            return app(RateLimiter::class);
-        }
-
-        protected function request()
-        {
-            return app(Request::class);
-        }
+        $this->key            = $key;
+        $this->maxAttempts    = $maxAttempts;
+        $this->decayInMinutes = $decayInMinutes;
+        $this->message        = $message;
     }
-} else {
-    class Throttle implements Rule
+
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        protected $rule = 'limiter';
+        if (!$this->passes($attribute, $value)) $fail($this->message());
+    }
 
-        protected $key = 'validation';
-
-        protected $maxAttempts = 5;
-
-        protected $decayInMinutes = 10;
-
-        protected $message = 'Too many attempts. Please try again later.';
-
-        public function __construct($key = 'validation', $maxAttempts = 5, $decayInMinutes = 10, $message = 'Too many attempts. Please try again later.')
-        {
-            $this->key = $key;
-            $this->maxAttempts = $maxAttempts;
-            $this->decayInMinutes = $decayInMinutes;
-            $this->message = $message;
+    public function passes($attribute, $value)
+    {
+        if ($this->hasTooManyAttempts()) {
+            return false;
         }
 
-        public function validate(string $attribute, mixed $value, Closure $fail): void
-        {
-            if (!$this->passes($attribute, $value)) $fail($this->message());
-        }
+        $this->incrementAttempts();
 
-        public function passes($attribute, $value)
-        {
-            if ($this->hasTooManyAttempts()) {
-                return false;
-            }
+        return true;
+    }
 
-            $this->incrementAttempts();
+    public function message()
+    {
+        return __($this->message);
+    }
 
-            return true;
-        }
+    protected function hasTooManyAttempts()
+    {
+        return $this->limiter()->tooManyAttempts(
+            $this->throttleKey(), $this->maxAttempts
+        );
+    }
 
-        public function message()
-        {
-            return __($this->message);
-        }
+    protected function incrementAttempts()
+    {
+        $this->limiter()->hit(
+            $this->throttleKey(), $this->decayInMinutes * 60
+        );
+    }
 
-        protected function hasTooManyAttempts()
-        {
-            return $this->limiter()->tooManyAttempts(
-                $this->throttleKey(), $this->maxAttempts
-            );
-        }
+    protected function throttleKey()
+    {
+        return $this->key . '|' . $this->request()->ip();
+    }
 
-        protected function incrementAttempts()
-        {
-            $this->limiter()->hit(
-                $this->throttleKey(), $this->decayInMinutes * 60
-            );
-        }
+    protected function limiter()
+    {
+        return app(RateLimiter::class);
+    }
 
-        protected function throttleKey()
-        {
-            return $this->key . '|' . $this->request()->ip();
-        }
-
-        protected function limiter()
-        {
-            return app(RateLimiter::class);
-        }
-
-        protected function request()
-        {
-            return app(Request::class);
-        }
+    protected function request()
+    {
+        return app(Request::class);
     }
 }

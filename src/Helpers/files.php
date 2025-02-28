@@ -1,6 +1,5 @@
 <?php
 
-use AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaDiskEnum;
 use AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaTypeEnum;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -44,63 +43,6 @@ if (!function_exists('get_enums')) {
         return array_merge_recursive(...$enums);
     }
 }
-
-
-/* ==================== Storage Link ==================== */
-
-/* This is a testing function, but you can use it as it is if you want. without changing params */
-if (!function_exists('filesystems_setup')) {
-    /**
-     * @param bool        $shared
-     * @param string|null $sharedPath
-     *
-     * @return array{disks: array, links: array}
-     */
-    function filesystems_setup(bool $shared = false, string|null $sharedPath = null): array
-    {
-        $disks  = [];
-        $shared = isset($sharedPath) && $shared;
-
-        if ($shared) {
-            $links["$sharedPath/public"]        = storage_path('app/public');
-            $links[public_path('media/public')] = $links["$sharedPath/public"];
-        } else {
-            $links = [public_path('media/public') => storage_path('app/public')];
-        }
-
-        foreach (MediaDiskEnum::cases() as $enum) {
-            $key   = strtolower($enum->name);
-            $value = $key;
-
-            $disks[$key] = [
-                'driver'     => 'local',
-                'root'       => storage_path("app/$key"),
-                'url'        => app_asset_url() . "/media/$value",
-                'visibility' => 'public',
-            ];
-
-            if ($shared) {
-                $links["$sharedPath/$key"]           = storage_path('app/' . $value);
-                $links[public_path('media/' . $key)] = $links["$sharedPath/$key"];
-            } else {
-                $links[public_path('media/' . $key)] = storage_path('app/' . $value);
-            }
-        }
-
-        $disks['public'] = [
-            'driver' => 'local',
-            'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/media/public',
-            'visibility' => 'public',
-        ];
-
-        return [
-            'disks' => $disks,
-            'links' => $links,
-        ];
-    }
-}
-
 
 /* ==================== Media ==================== */
 
@@ -237,7 +179,7 @@ if (!function_exists('is_media_type_of')) {
                 is_media_type_video($string)    => MediaTypeEnum::Video->name,
                 is_media_type_document($string) => MediaTypeEnum::Document->name,
                 is_media_type_archive($string)  => MediaTypeEnum::Archive->name,
-                default => null
+                default                         => null
             });
         } catch (Exception) {
             return null;
@@ -295,7 +237,7 @@ if (!function_exists('base64_to_uploaded_file')) {
      *
      * @return UploadedFile
      */
-    function base64_to_uploaded_file(string $base64String, string $fileName): UploadedFile
+    function base64_to_uploaded_file(string $base64String, string $fileName, Closure $closure = null): UploadedFile
     {
         // Remove data URI scheme if present
         $base64String = preg_replace('#^data:image/[^;]+;base64,#', '', $base64String);
@@ -318,6 +260,7 @@ if (!function_exists('base64_to_uploaded_file')) {
 
         // Optionally, you can delete the temporary file
         // unlink($tempFilePath);
+        if (isset($closure)) $closure($tempFilePath);
 
         return $uploadedFile;
     }
@@ -330,7 +273,7 @@ if (!function_exists('url_to_uploaded_file')) {
      *
      * @return UploadedFile
      */
-    function url_to_uploaded_file(string $url, string $fileName = null): UploadedFile
+    function url_to_uploaded_file(string $url, string $fileName = null, Closure $closure = null): UploadedFile
     {
         $tempFilePath = tempnam(sys_get_temp_dir(), 'url_to_uploaded_file');
 
@@ -350,6 +293,7 @@ if (!function_exists('url_to_uploaded_file')) {
 
         // Optionally, you can delete the temporary file
         // unlink($tempFilePath);
+        if (isset($closure)) $closure($tempFilePath);
 
         return $uploadedFile;
     }

@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Http\Middleware\Custom;
+
+use Closure;
+use Illuminate\Http\Request;
+use AbdullahMateen\LaravelHelpingMaterial\Middleware\Custom\AuthorizationMiddleware as BaseMiddleware;
+
+class AuthorizationMiddleware extends BaseMiddleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param Request $request
+     * @param Closure $next
+     * @param mixed   ...$userLevels
+     *
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next, ...$userLevels)
+    {
+        return parent::handle($request, $next, $userLevels);
+    }
+}

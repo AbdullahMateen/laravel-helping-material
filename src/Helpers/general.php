@@ -1,5 +1,10 @@
 <?php
 
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -77,7 +82,7 @@ if (!function_exists('is_zero')) {
      */
     function is_zero(mixed $number): bool
     {
-        return is_numeric($number) && (int) $number === 0;
+        return is_numeric($number) && $number === 0;
     }
 }
 
@@ -163,21 +168,22 @@ if (!function_exists('is_age_acceptable')) {
     function is_age_acceptable(Carbon|string $dateOfBirth, Carbon|string $dateTill = null, string $operator = '<=', int $criteria = 16): bool|null
     {
         try {
+            if (!in_array($operator, ["<", "lt", "<=", "le", ">", "gt", ">=", "ge", "==", "=", "eq", "!=", "<>", "ne"])) throw new InvalidArgumentException('invalid operator symbol provided.');
             $age = calculate_age(
                 Carbon::parse($dateOfBirth, app_timezone())->format('Y-m-d'),
                 Carbon::parse($dateTill, app_timezone())->format('Y-m-d')
             );
             return version_compare($age, $criteria, $operator);
             //            return match ($operator) {
+            //                '<'   => $age < $criteria,
+            //                '<='  => $age <= $criteria,
+            //                '>'   => $age > $criteria,
+            //                '>='  => $age >= $criteria,
             //                '=='  => $age == $criteria,
             //                '===' => $age === $criteria,
             //                '<>'  => $age <> $criteria,
             //                '!='  => $age != $criteria,
             //                '!==' => $age !== $criteria,
-            //                '<'   => $age < $criteria,
-            //                '<='  => $age <= $criteria,
-            //                '>'   => $age > $criteria,
-            //                '>='  => $age >= $criteria,
             //                '<=>' => $age <=> $criteria,
             //            };
         } catch (Exception) {
@@ -296,8 +302,6 @@ if (!function_exists('percentage_change')) {
         return $increment ? $amount * (1 + ($percentage / 100)) : $amount * (1 - ($percentage / 100));
     }
 }
-
-
 
 
 /* ==================== Dates ==================== */
@@ -514,7 +518,24 @@ if (!function_exists('days_in_month')) {
     }
 }
 
+/* ==================== Time ==================== */
+/* Todo: handle proper time format */
+if (!function_exists('time_format_to_number')) {
+    function time_format_to_number($time, $splitter = ':')
+    {
+        [$hours, $minutes] = explode($splitter, $time);
+        return (((int) $hours) * 60) + ((int) $minutes);
+    }
+}
 
+if (!function_exists('number_to_time_format')) {
+    function number_to_time_format($number, $join = ':')
+    {
+        $hours   = str_pad((int) ($number / 60), 2, '0', STR_PAD_LEFT);
+        $minutes = str_pad($number % 60, 2, '0', STR_PAD_LEFT);
+        return "$hours$join$minutes";
+    }
+}
 
 
 /* ==================== String/Sanitize ==================== */
@@ -570,7 +591,8 @@ if (!function_exists('sanitize_text_editor_text')) {
             $text = remove_script_tag($text);
             $text = remove_invalid_html_tags($text);
             $text = sanitize_text_editor_search_and_replace($text);
-        } catch (Exception $exception) {}
+        } catch (Exception $exception) {
+        }
 
         return $text;
     }
@@ -601,7 +623,8 @@ if (!function_exists('sanitize_text_editor_search_and_replace')) {
                     $text = sanitize_text_editor_search_and_replace($text, $positionStart);
                 }
             }
-        } catch (Exception $exception) {}
+        } catch (Exception $exception) {
+        }
 
         return $text;
     }
@@ -731,122 +754,20 @@ if (!function_exists('snake_case')) {
     }
 }
 
-
+if (!function_exists('pascal_case')) {
+    /**
+     * @param string $string
+     *
+     * @return string
+     */
+    function pascal_case(string $string): string
+    {
+        return implode('.', array_map('ucwords', explode('.', Str::studly($string))));
+    }
+}
 
 
 /* ==================== Google ==================== */
-
-if (!function_exists('send_fcm_notification')) {
-    /**
-     * @param string $deviceToken
-     * @param        $notification
-     * @param array  $data
-     *
-     * @return bool|string
-     */
-    function send_fcm_notification(string $deviceToken, $notification, array $data = [])
-    {
-        $accessToken = config('services.notification.token');
-        $URL         = config('services.notification.base_url');
-
-        $keys = '';
-        foreach ($data['keys'] ?? [] as $key => $value) $keys .= sprintf('"%s": "%s",', $key, is_array($value) ? implode(',', $value) : $value);
-        $keys = rtrim($keys, ",");
-        if (!empty($keys)) $keys = ',' . $keys;
-
-        $post_data = '{
-           "notification":{
-              "title":"' . ($notification->title ?? '') . '",
-              "body":"' . $notification->message . '",
-              "image":"",
-              "sound":"default",
-              "android_channel_id":"fcm_default_channel"
-           },
-           "priority":"high",
-           "data":{
-              "click_action":"FLUTTER_NOTIFICATION_CLICK",
-              "notification_id":"' . $notification->id . '",
-              "model_id":"' . (is_array($notification->model_id) ? implode(',', $notification->model_id) : $notification->model_id) . '",
-              "key":"' . $notification->for . '"
-              ' . $keys . '
-           },
-           "android":{
-              "priority":"high",
-              "notification":{
-                 "title":"' . ($notification->title ?? '') . '",
-                 "body":"' . $notification->message . '",
-                 "sound":"default"
-              }
-           },
-           "apns":{
-              "aps":{
-                 "alert":{
-                    "title":"' . ($notification->title ?? '') . '",
-                    "body":"' . $notification->message . '"
-                 },
-                 "badge":1
-              },
-              "headers":{
-                 "apns-priority":10
-              },
-              "payload":{
-                 "aps":{
-                    "sound":"default"
-                 }
-              },
-              "fcm_options":{
-                 "image":""
-              },
-              "customKey":"customValue"
-              ' . $keys . '
-           },
-           "time_to_live":3600,
-           "to":"' . $deviceToken . '"
-        }';
-
-        $crl = curl_init();
-
-        $headers   = [];
-        $headers[] = 'Content-type: application/json';
-        $headers[] = 'Authorization: key=' . $accessToken;
-        curl_setopt($crl, CURLOPT_SSL_VERIFYPEER, false);
-
-        curl_setopt($crl, CURLOPT_URL, $URL);
-        curl_setopt($crl, CURLOPT_HTTPHEADER, $headers);
-
-        curl_setopt($crl, CURLOPT_POST, true);
-        curl_setopt($crl, CURLOPT_POSTFIELDS, $post_data);
-        curl_setopt($crl, CURLOPT_RETURNTRANSFER, true);
-
-        $result = curl_exec($crl);
-
-        curl_close($crl);
-
-        //        logs()->info('fcm:result::' . $notification->title, [
-        //            'rest'         => json_decode($result),
-        //            'notification' => [
-        //                'id'        => $notification->id,
-        //                'title'     => $notification->title,
-        //                'message'   => $notification->message,
-        //                'for'       => $notification->for,
-        //                'model_id'  => is_array($notification->model_id) ? implode(',', $notification->model_id) : $notification->model_id,
-        //                'keys'      => $keys,
-        //                'post_data' => '
-        //                    "data":{
-        //                      "click_action":"FLUTTER_NOTIFICATION_CLICK",
-        //                      "notification_id":"' . $notification->id . '",
-        //                      "model_id":"' . (is_array($notification->model_id) ? implode(',', $notification->model_id) : $notification->model_id) . '",
-        //                      "key":"' . $notification->for . '"
-        //                      ' . $keys . '
-        //                   }
-        //                ',
-        //            ],
-        //            'device_token' => $deviceToken,
-        //        ]);
-
-        return $result;
-    }
-}
 
 if (!function_exists('get_lat_lng_from_address')) {
     /**
@@ -937,9 +858,22 @@ if (!function_exists('lat_long_dist_of_two_points')) {
 }
 
 
-
-
 /* ==================== Arrays ==================== */
+
+if (!function_exists('nested_array_filter')) {
+    /**
+     * @param array $array
+     *
+     * @return array|false
+     */
+    function nested_array_filter(array $array)
+    {
+        foreach ($array as $key => &$value) {
+            if (is_array($value)) $value = nested_array_filter($value);
+        }
+        return array_filter($array);
+    }
+}
 
 if (!function_exists('replace_array_keys')) {
     /**
@@ -954,6 +888,27 @@ if (!function_exists('replace_array_keys')) {
     }
 }
 
+if (!function_exists('array_keys_to_snake_case')) {
+    /**
+     * @param array $array
+     *
+     * @return array
+     */
+    function array_keys_to_snake_case(array $array): array
+    {
+        $snakeCaseArray = [];
+        foreach ($array as $key => $item) {
+            if ($item instanceof JsonResource) {
+                $item = $item->toArray(request());
+            }
+
+            if (is_array($item)) $snakeCaseArray[Str::snake(str_replace(' ', '_', $key))] = array_keys_to_snake_case($item);
+            else $snakeCaseArray[Str::snake(str_replace(' ', '_', $key))] = $item;
+        }
+        return $snakeCaseArray;
+    }
+}
+
 if (!function_exists('array_search_recursive')) {
     /**
      * @param array  $haystack
@@ -963,8 +918,8 @@ if (!function_exists('array_search_recursive')) {
      */
     function array_search_recursive(array $haystack, string $needle)
     {
-        $iterator  = new \RecursiveArrayIterator($haystack);
-        $recursive = new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::SELF_FIRST);
+        $iterator  = new RecursiveArrayIterator($haystack);
+        $recursive = new RecursiveIteratorIterator($iterator, RecursiveIteratorIterator::SELF_FIRST);
         foreach ($recursive as $key => $value) {
             if ($value === $needle) {
                 return $key;
@@ -984,7 +939,7 @@ if (!function_exists('array_search_item')) {
      */
     function array_search_item(array $haystack, string $needle)
     {
-        $iterator = new \RecursiveArrayIterator($haystack);
+        $iterator = new RecursiveArrayIterator($haystack);
         foreach ($iterator as $key => $value) {
             if (in_array($needle, $value)) {
                 return $key;
@@ -1049,8 +1004,6 @@ if (!function_exists('set_nested_array_value')) {
         return $backup;
     }
 }
-
-
 
 
 /* ==================== Symbols/Icons ==================== */
@@ -1213,8 +1166,6 @@ if (!function_exists('html_symbol_codes')) {
 }
 
 
-
-
 /* ==================== Json/Xml ==================== */
 
 if (!function_exists('json_to_xml')) {
@@ -1250,7 +1201,7 @@ if (!function_exists('array_to_xml')) {
             $root  = $useFirstKeyAsRootTag ? array_key_first($array) : 'root';
             $array = $useFirstKeyAsRootTag ? $array[$root] : $array;
 
-            $simpleXmlElement = new \SimpleXMLElement(sprintf("<?xml version=\"1.0\"?><%s></%s>", $root, $root));
+            $simpleXmlElement = new SimpleXMLElement(sprintf("<?xml version=\"1.0\"?><%s></%s>", $root, $root));
             array_to_xml_conversion_script($array, $simpleXmlElement);
             return isset($path) ? $simpleXmlElement->asXML($path) : $simpleXmlElement->asXML();
         } catch (Exception $exception) {
@@ -1347,8 +1298,6 @@ if (!function_exists('array_to_xml_conversion_script')) {
 }
 
 
-
-
 /* ==================== Exception ==================== */
 
 if (!function_exists('exception_response')) {
@@ -1374,8 +1323,6 @@ if (!function_exists('exception_response')) {
         }
     }
 }
-
-
 
 
 /* ==================== Pagination ==================== */
@@ -1419,8 +1366,50 @@ if (!function_exists('pagination_stats')) {
     }
 }
 
+if (!function_exists('length_aware_paginator')) {
+    /**
+     * @param $items
+     * @param $perPage
+     * @param $page
+     * @param $options
+     *
+     * @return LengthAwarePaginator
+     */
+    function length_aware_paginator($items, $perPage = 15, $page = null, $options = []): LengthAwarePaginator
+    {
+        $page  ??= (Paginator::resolveCurrentPage() ?: 1);
+        $items = $items instanceof Collection ? $items : Collection::make($items);
+        return new LengthAwarePaginator($items->forPage($page, $perPage), $items->count(), $perPage, $page, $options);
+    }
+}
 
+if (!function_exists('simple_pagination')) {
+    /**
+     * @param $items
+     * @param $total
+     * @param $page
+     * @param $perPage
+     *
+     * @return array{url: string, items: int, total: int|mixed, per_page: int|mixed, current_page: mixed, first_page: int, previous_page: int|mixed|null, next_page: int|mixed|null, last_page: mixed}
+     */
+    function simple_pagination($items, $total = 0, $page = null, $perPage = 15): array
+    {
+        $page     = max($page, 1);
+        $lastPage = max((int) ceil($total / $perPage), 1);
 
+        return [
+            'url'           => url()->current(),
+            'items'         => count($items),
+            'total'         => $total,
+            'per_page'      => $perPage,
+            'current_page'  => $page,
+            'first_page'    => 1,
+            'previous_page' => ($page - 1) ?: null,
+            'next_page'     => $page >= $lastPage ? null : $page + 1,
+            'last_page'     => $lastPage,
+        ];
+    }
+}
 
 /* ==================== Other ==================== */
 
@@ -1462,6 +1451,55 @@ if (!function_exists('months_list')) {
             'nov' => 'November',
             'dec' => 'December',
         ];
+    }
+}
+
+if (!function_exists('is_leap_year')) {
+    function is_leap_year($year = null): bool
+    {
+        $year = match ($year) {
+            is_int($year)           => $year,
+            is_null($year)          => now_now()->format('Y'),
+            is_string($year)        => $year,
+            $year instanceof Carbon => $year->format('Y'),
+            default                 => throw new \Exception('Unexpected year value provided'),
+        };
+
+        return ($year % 4 === 0 && $year % 100 !== 0) || ($year % 400 === 0);
+    }
+}
+
+if (!function_exists('random_color_hex_part')) {
+    /**
+     * @return string
+     */
+    function random_color_hex_part(): string
+    {
+        return str_pad(dechex(random_int(0, 255)), 2, '0', STR_PAD_LEFT);
+    }
+}
+
+if (!function_exists('generate_random_color_hex')) {
+    /**
+     * @return string
+     */
+    function generate_random_color_hex(): string
+    {
+        return '#' . random_color_hex_part() . random_color_hex_part() . random_color_hex_part();
+    }
+}
+
+if (!function_exists('generate_git_branch')) {
+    /**
+     * @param string $type Type Could be [ Fix | Imp | Debug | Func | HotFix | etc. ]
+     * @param string $name
+     *
+     * @return string
+     */
+    function generate_git_branch(string $type, string $name): string
+    {
+        /* Todo: Dont know what was i thinking ... will see */
+        return '';
     }
 }
 

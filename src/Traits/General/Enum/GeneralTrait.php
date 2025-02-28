@@ -66,7 +66,7 @@ trait GeneralTrait
     }
 
     /**
-     * @param string $type name, value
+     * @param string $type name, value, null
      * @param string $function
      *
      * @return mixed

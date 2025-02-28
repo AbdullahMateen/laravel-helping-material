@@ -23,15 +23,44 @@ $values: "";
   }
 
   .pa-t-n#{$value}px {
-    top: #{$value}px;
+    top: -#{$value}px;
   }
   .pa-b-n#{$value}px {
-    bottom: #{$value}px;
+    bottom: -#{$value}px;
   }
   .pa-l-n#{$value}px {
-    left: #{$value}px;
+    left: -#{$value}px;
   }
   .pa-r-n#{$value}px {
-    right: #{$value}px;
+    right: -#{$value}px;
+  }
+}
+
+$values: 0, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 100;
+@each $value in $values {
+  .pa-t-#{$value}p {
+    top: #{$value} + '%';
+  }
+  .pa-b-#{$value}p {
+    bottom: #{$value} + '%';
+  }
+  .pa-l-#{$value}p {
+    left: #{$value} + '%';
+  }
+  .pa-r-#{$value}p {
+    right: #{$value} + '%';
+  }
+
+  .pa-t-n#{$value}p {
+    top: -#{$value} + '%';
+  }
+  .pa-b-n#{$value}p {
+    bottom: -#{$value} + '%';
+  }
+  .pa-l-n#{$value}p {
+    left: -#{$value} + '%';
+  }
+  .pa-r-n#{$value}p {
+    right: -#{$value} + '%';
   }
 }

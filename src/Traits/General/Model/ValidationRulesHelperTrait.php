@@ -2,7 +2,7 @@
 
 namespace AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model;
 
-trait ValidationRulesTrait
+trait ValidationRulesHelperTrait
 {
     public function ruleUnique($column, $id = null)
     {
