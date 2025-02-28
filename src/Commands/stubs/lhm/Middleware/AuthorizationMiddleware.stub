@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Middleware\Custom;
+namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use AbdullahMateen\LaravelHelpingMaterial\Middleware\Custom\AuthorizationMiddleware as BaseMiddleware;
+use AbdullahMateen\LaravelHelpingMaterial\Middleware\AuthorizationMiddleware as BaseMiddleware;
 
 class AuthorizationMiddleware extends BaseMiddleware
 {

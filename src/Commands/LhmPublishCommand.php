@@ -117,7 +117,7 @@ class LhmPublishCommand extends Command
 
     public function publishMiddlewares()
     {
-        $this->filesystem->ensureDirectoryExists(base_path('app/Http/Middleware/Custom'));
+        $this->filesystem->ensureDirectoryExists(base_path('app/Http/Middleware'));
         $this->filesystem->copy("$this->prefix/stubs/lhm/Middleware/AuthorizationMiddleware.stub", base_path('app/Http/Middleware/AuthorizationMiddleware.php'));
 
         return base_path('app/Http/Middleware/Custom');
