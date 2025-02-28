@@ -31,7 +31,7 @@ class LhmPublishCommand extends Command
     {
         parent::__construct();
         $this->filesystem = $filesystem;
-        $this->prefix     = base_path('vendor\abdullah-mateen\laravel-helping-metarial');
+        $this->prefix     = base_path('vendor\abdullah-mateen\laravel-helping-material');
     }
 
     /**

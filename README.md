@@ -19,7 +19,6 @@
     - [Resources](#resources)
     - [Resources](#resources)
     - [Rules](#rules)
-    - [Simple Media Library](#)
     - [Simple Media Library](#simple-media-library)
 - [Authors](#author)
 - [License](#license)
@@ -58,7 +57,7 @@ $ php -v
 Require this package with composer using the following command:
 
 ```sh
-composer require abdullah-mateen/laravel-helping-metarial
+composer require abdullah-mateen/laravel-helping-material
 ```
 
 ## Publish
@@ -123,7 +122,7 @@ User::create([
 
 [(Back to top)](#table-of-contents)
 
-*<small style="color: #f00;font-weight: bold;">list of helper functions will be available soon.</small>* For now you can have a look at available functions [here](https://github.com/AbdullahMateen/laravel-helping-metarial/tree/1.x/src/Helpers)
+*<small style="color: #f00;font-weight: bold;">list of helper functions will be available soon.</small>* For now you can have a look at available functions [here](https://github.com/AbdullahMateen/laravel-helping-material/tree/1.x/src/Helpers)
 
 The helper functions are not automatically registered by default. To utilize these helper functions, you must first publish them using the command `php artisan lhm:publish` and select the helper functions options. Afterward, navigate to your `composer.json` file and perform the following steps:
 
@@ -189,7 +188,7 @@ class Example implements ColorsInterface {
 }
 ```
 
-> you can see another examples in-use in Enums [here](https://github.com/AbdullahMateen/laravel-helping-metarial/tree/1.x/src/Helpers)
+> you can see another examples in-use in Enums [here](https://github.com/AbdullahMateen/laravel-helping-material/tree/1.x/src/Helpers)
 
 ### Middleware
 
@@ -226,7 +225,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('aut
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('custom-authorize:1001,3001')
 ```
 
-> take a look at AuthorizationMiddleware [here](https://github.com/AbdullahMateen/laravel-helping-metarial/tree/1.x/src/Helpers)
+> take a look at AuthorizationMiddleware [here](https://github.com/AbdullahMateen/laravel-helping-material/tree/1.x/src/Helpers)
 
 ### Models
 
@@ -268,10 +267,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('cus
 
 [(Back to top)](#table-of-contents)
 
-* **[Abdullah Mateen](https://github.com/AbdullahMateen/laravel-helping-metarial)** - *abdulahmateen101@gmail.com* 
+* **[Abdullah Mateen](https://github.com/AbdullahMateen/laravel-helping-material)** - *abdulahmateen101@gmail.com* 
 
 ## License
 
 [(Back to top)](#table-of-contents)
 
-The MIT License (MIT) 2024 - [Abdullah Mateen](https://github.com/AbdullahMateen/laravel-helping-metarial). Please have a look at the [LICENSE.md](./LICENSE) for more details.
+The MIT License (MIT) 2024 - [Abdullah Mateen](https://github.com/AbdullahMateen/laravel-helping-material). Please have a look at the [LICENSE.md](./LICENSE) for more details.
