@@ -18,13 +18,20 @@ use Symfony\Component\HttpFoundation\Response as HttpFoundationResponse;
 
 class LaravelHelpingMaterialServiceProvider extends ServiceProvider
 {
+    use ApiResponseTrait;
 
     /**
      * @return void
      */
     public function boot(): void
     {
-        //
+        $this->publishes([
+            __DIR__ . '/lhm.php' => config_path('lhm.php'),
+        ], 'config');
+
+        $this->mergeConfigFrom(
+            __DIR__.'/lhm.php', 'lhm'
+        );
     }
 
     /**
@@ -34,9 +41,6 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(
-            __DIR__.'/lhm.php', 'lhm'
-        );
 
         Model::shouldBeStrict(config('lhm.models.should_be_strict'));
 
