@@ -31,7 +31,8 @@ class LhmPublishCommand extends Command
     {
         parent::__construct();
         $this->filesystem = $filesystem;
-        $this->prefix     = base_path('vendor\abdullah-mateen\laravel-helping-material\src\Commands');
+        $this->basepath   = base_path('vendor\abdullah-mateen\laravel-helping-material');
+        $this->prefix     = "$this->basepath\src\Commands";
     }
 
     /**
@@ -165,7 +166,7 @@ class LhmPublishCommand extends Command
     public function publishResources()
     {
         $this->filesystem->ensureDirectoryExists(base_path('resources/sass/'));
-        $this->filesystem->copyDirectory("$this->prefix/src/resources/sass/", base_path('resources/sass/'));
+        $this->filesystem->copyDirectory("$this->basepath/src/resources/sass/", base_path('resources/sass/'));
 
         return base_path('resources/sass');
     }
