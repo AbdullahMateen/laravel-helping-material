@@ -1,5 +1,6 @@
 <?php
 
+use AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaDiskEnum;
 use AbdullahMateen\LaravelHelpingMaterial\Enums\User\AccountStatusEnum;
 use AbdullahMateen\LaravelHelpingMaterial\Enums\User\RoleEnum;
 use App\Models\User;
@@ -7,6 +8,8 @@ use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------

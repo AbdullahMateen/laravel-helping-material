@@ -1,8 +1,8 @@
 <?php
 
-namespace AbdullahMateen\LaravelHelpingMaterial\Exceptions;
+namespace App\Exceptions;
 
-use AbdullahMateen\LaravelHelpingMaterial\Exceptions\ApiResponseExceptionHandler as BaseException
+use AbdullahMateen\LaravelHelpingMaterial\Exceptions\ApiResponseExceptionHandler as BaseException;
 
 class ApiResponseExceptionHandler extends BaseException
 {

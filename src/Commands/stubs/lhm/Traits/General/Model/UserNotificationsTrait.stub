@@ -7,4 +7,23 @@ use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\UserNotifications
 trait UserNotificationsTrait
 {
     use BaseUserNotificationsTrait;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Email Notification
+        |--------------------------------------------------------------------------
+        */
+
+        /* ==================== User CRUD ==================== */
+        //    public function notifyCreated($data = [])
+        //    {
+        //        $title = app_name() . " Notification";
+        //        $body  = 'Dear Customer, you have been successfully registered with us.';
+        //
+        //        $notification = $this->notification($title, $body, TypeEnum::UserCreated, [], $this);
+        //        $this->notifyMobile($title, $body);
+        //        $this->notify(new RegisteredNotification(['un_hashed_password' => $data['password']]));
+        //
+        //        return $this;
+        //    }
 }
