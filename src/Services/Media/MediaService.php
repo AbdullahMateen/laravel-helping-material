@@ -567,7 +567,7 @@ class MediaService
             throw new RuntimeException('This file type is not allowed');
         }
 
-        $this->ensureFolderExists($this->getPath(), $this->getDisk());
+        $this->ensureFolderExists($this->getDisk(), $this->getPath());
 
         $this->data(match ($this->getMediaType()) {
             MediaTypeEnum::Image    => array_merge($this->storeImage(), ['media_type' => MediaTypeEnum::Image->value]),
