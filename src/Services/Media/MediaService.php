@@ -529,7 +529,7 @@ class MediaService
      * @return $this
      * @throws Exception
      */
-    public function storeAs(?string $path = null, ?string $filename = null, mixed $disk = null): static
+    public function store(?string $path = null, ?string $filename = null, mixed $disk = null): static
     {
         $fileInfo = $this
             ->when(isset($disk), fn () => $this->disk($disk))
@@ -542,11 +542,11 @@ class MediaService
         }
 
         $this->data(match ($this->getMediaType()) {
-            MediaTypeEnum::Image    => array_merge($this->storeImage(), ['media_type' => MediaTypeEnum::Image]),
-            MediaTypeEnum::Audio    => array_merge($this->storeAudio(), ['media_type' => MediaTypeEnum::Audio]),
-            MediaTypeEnum::Video    => array_merge($this->storeVideo(), ['media_type' => MediaTypeEnum::Video]),
-            MediaTypeEnum::Document => array_merge($this->storeDocument(), ['media_type' => MediaTypeEnum::Document]),
-            MediaTypeEnum::Archive  => array_merge($this->storeArchive(), ['media_type' => MediaTypeEnum::Archive]),
+            MediaTypeEnum::Image    => array_merge($this->storeImage(), ['media_type' => strtolower(MediaTypeEnum::Image->toString())]),
+            MediaTypeEnum::Audio    => array_merge($this->storeAudio(), ['media_type' => strtolower(MediaTypeEnum::Audio->toString())]),
+            MediaTypeEnum::Video    => array_merge($this->storeVideo(), ['media_type' => strtolower(MediaTypeEnum::Video->toString())]),
+            MediaTypeEnum::Document => array_merge($this->storeDocument(), ['media_type' => strtolower(MediaTypeEnum::Document->toString())]),
+            MediaTypeEnum::Archive  => array_merge($this->storeArchive(), ['media_type' => strtolower(MediaTypeEnum::Archive->toString())]),
             default                 => null,
         })->reset();
 
@@ -562,10 +562,10 @@ class MediaService
      * @return $this
      * @throws Exception
      */
-    public function filesStoreAs(array $files, ?string $path = null, ?string $filename = null, mixed $disk = null): static
+    public function filesStore(array $files, ?string $path = null, ?string $filename = null, mixed $disk = null): static
     {
         foreach (array_filter($files) as $file) {
-            $this->file($file)->storeAs($path, $filename, $disk);
+            $this->file($file)->store($path, $filename, $disk);
         }
         return $this;
     }
