@@ -65,7 +65,7 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
      */
     private function registerDirectories(): void
     {
-        $folder = config('lhm.storage.default_folder');
+        $folder = config('lhm.storage.folder');
         if (!File::exists(public_path($folder))) {
             File::makeDirectory(public_path($folder), 0777, true);
         }

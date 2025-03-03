@@ -2,20 +2,78 @@
 
 return [
 
-    'api' => [
-        'convert_keys_to_snake_case' => true,
+    /*
+    |--------------------------------------------------------------------------
+    | API Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This section controls the API response settings. Enabling the
+    | conversion of response keys to snake_case ensures consistency and
+    | better readability across your RESTful API responses.
+    |
+    | If true, all keys in API responses will be converted to snake_case.
+    */
+    'api'           => [
+        'response_keys' => [
+            'snake_case' => true,
+        ],
     ],
 
-    'models' => [
+    /*
+    |--------------------------------------------------------------------------
+    | Model Strict Mode
+    |--------------------------------------------------------------------------
+    |
+    | This setting controls whether your package enforces strict model
+    | behavior via Laravel's Model::shouldBeStrict(). Enabling strict mode
+    | can help prevent issues such as lazy loading of relationships.
+    | Set it to false to disable strict model behavior.
+    |
+    */
+    'models'        => [
         'should_be_strict' => true,
     ],
 
-    'storage' => [
-        'default_folder' => 'storage',
+    /*
+    |--------------------------------------------------------------------------
+    | Storage Settings
+    |--------------------------------------------------------------------------
+    |
+    | These settings define how your package handles file storage.
+    | - 'folder' specifies the folder name for symbolic links created by
+    |   "php artisan storage:link".
+    | - 'shared' enables you to use a shared storage location across multiple
+    |   projects by specifying a shared path.
+    |
+    */
+    'storage'       => [
+        // The default folder name for symbolic links in the public directory.
+        'folder' => 'storage',
+
+        // Shared storage configuration.
+        'shared'  => [
+            // Set to true to enable shared storage across projects.
+            'enabled' => env('SHARED_STORAGE', false),
+            // Define the path to the shared storage location.
+            'path'    => env('SHARED_STORAGE_PATH', null),
+        ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Media Service Configuration
+    |--------------------------------------------------------------------------
+    |
+    | This section configures the media service functionality.
+    | - 'media_disk_enum' specifies the class used for managing media disks.
+    | - 'extensions' lists the allowed file extensions for various media types.
+    |
+    */
     'media_service' => [
+        // Class that defines available media disks.
         'media_disk_enum' => \AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaDiskEnum::class,
+
+        // Allowed file extensions categorized by media type.
         'extensions'      => [
             'image'    => ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'svg', 'webp'],
             'audio'    => ['mp3', 'aac', 'ogg', 'flac', 'alac', 'wav', 'aiff', 'dsd', 'pcm'],
@@ -26,7 +84,5 @@ return [
     ],
 
 ];
-
-
 
 

@@ -79,7 +79,7 @@ trait ApiResponseTrait
         $response['description'] = $response_code == Response::HTTP_UNPROCESSABLE_ENTITY
             ? implode("\n", array_unique(array_flatten($errors)))
             : $message;
-        $response['data']        = config('lhm.api.convert_keys_to_snake_case') ? array_keys_to_snake_case($data) : $data;
+        $response['data']        = config('lhm.api.response_keys.snake_case') ? array_keys_to_snake_case($data) : $data;
 
         if ($response_code !== Response::HTTP_OK) {
             $response['exception'] = $source;
