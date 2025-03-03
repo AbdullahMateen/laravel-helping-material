@@ -118,8 +118,8 @@ trait ImageTrait
         return [
             'name' => $filename,
             'path' => trim(sprintf("%s/%s", $disk, $path), '/'),                              // Storage::disk($disk)->path($path),
-            'size' => Storage::disk($disk)->size($path !== '' ? "$path/$filename" : $filename),          // Storage::disk($disk)->size($path),
-            'url'  => sprintf("%s/%s", $disk, $path !== '' ? "$path/$filename" : $filename),    // Storage::disk($disk)->url($path),
+            'size' => Storage::disk($disk)->size($path),          // Storage::disk($disk)->size($path),
+            'url'  => sprintf("%s/%s", $disk, $path),    // Storage::disk($disk)->url($path),
         ];
     }
 }

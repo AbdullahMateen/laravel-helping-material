@@ -793,8 +793,8 @@ class MediaService
             $media->mediaable_id   = $this->getModel()->id;
             $media->mediaable_type = get_morphs_maps($this->getModel()::class);
 
-            $media->media_url = sprintf("%s/%s", $disk, $path !== '' ? "$path/$filename" : $filename); // Storage::disk($disk)->url("$path/$filename");
-            $media->thumb_url = sprintf("%s/%s", $disk, $path !== '' ? "$path/thumb_$filename" : "thumb_$filename"); // Storage::disk($disk)->url("$path/thumb_$filename");
+            $media->media_url = sprintf("%s/%s", $disk, filled($path) ? "$path/$filename" : $filename); // Storage::disk($disk)->url("$path/$filename");
+            $media->thumb_url = sprintf("%s/%s", $disk, filled($path) ? "$path/thumb_$filename" : "thumb_$filename"); // Storage::disk($disk)->url("$path/thumb_$filename");
             $media->path      = Storage::disk($disk)->path("$path/$filename");
             $media->save();
 
