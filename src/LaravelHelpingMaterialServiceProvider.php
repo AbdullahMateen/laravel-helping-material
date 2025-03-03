@@ -27,11 +27,7 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/lhm.php' => config_path('lhm.php'),
-        ], 'config');
-
-        $this->mergeConfigFrom(
-            __DIR__.'/lhm.php', 'lhm'
-        );
+        ], 'laravel-helping-material-config');
     }
 
     /**
@@ -41,6 +37,9 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->mergeConfigFrom(
+            __DIR__.'/lhm.php', 'lhm'
+        );
 
         Model::shouldBeStrict(config('lhm.models.should_be_strict'));
 
