@@ -12,6 +12,26 @@ enum MediaDiskEnum: int implements ColorsInterface
     case Temp = 1;
     case Project = 2;
     case Placeholders = 3;
+    case Local = 4;
+    case Public = 5;
+    case S3 = 6;
+
+    /**
+     * @param string $name
+     *
+     * @return MediaDiskEnum
+     */
+    public static function fromName(string $name): MediaDiskEnum
+    {
+        return match (strtolower($name)) {
+            'temp'         => self::Temp,
+            'project'      => self::Project,
+            'placeholders' => self::Placeholders,
+            'local'        => self::Local,
+            'public'       => self::Public,
+            's3'           => self::S3,
+        };
+    }
 
     /**
      * @return string

@@ -146,10 +146,12 @@ class MediaService
     public function disk(mixed $disk = 'public'): static
     {
         $mediaEnum  = $this->getMediaDiskEnum();
-        $this->disk = $disk instanceof $mediaEnum ? $disk->disk() : $disk;
-        if (blank($this->disk)) {
-            $this->disk = 'public';
-        }
+        $this->disk = match (true) {
+            $disk instanceof $mediaEnum => $disk->disk(),
+            is_numeric($disk)           => $mediaEnum::tryFrom($disk)->disk(),
+            is_string($disk)            => $mediaEnum::fromName($disk)->disk(),
+            default                     => $mediaEnum::fromName('public')->disk(),
+        };
         return $this;
     }
 
@@ -402,6 +404,30 @@ class MediaService
 
     /* ==================== helpers ==================== */
 
+    private function ensureFolderExists($disk, $path)
+    {
+        if (Storage::disk($disk)->directoryExists($path)) return;
+
+        match ($disk) {
+            'local' => File::makeDirectory(storage_path("app/$path"), 0755, true),
+            default => File::makeDirectory(storage_path("app/$disk/$path"), 0755, true)
+        };
+    }
+
+    private function generateFileAttributes($disk, $path, $filename)
+    {
+        $path = trim("$path/$filename", '/');
+        $size = Storage::disk($disk)->size($path);
+
+        $disk = $disk === 'local' ? '' : $disk;
+        return [
+            'name' => $filename,
+            'path' => trim(sprintf("%s/%s", $disk, $path), '/'),    // Storage::disk($disk)->path($path),
+            'size' => $size,                                                        // Storage::disk($disk)->size($path),
+            'url'  => trim(sprintf("%s/%s", $disk, $path), '/'),    // Storage::disk($disk)->url($path),
+        ];
+    }
+
     /**
      * @param Image|string|UploadedFile|null $file
      *
@@ -541,12 +567,14 @@ class MediaService
             throw new RuntimeException('This file type is not allowed');
         }
 
+        $this->ensureFolderExists($this->getPath(), $this->getDisk());
+
         $this->data(match ($this->getMediaType()) {
-            MediaTypeEnum::Image    => array_merge($this->storeImage(), ['media_type' => strtolower(MediaTypeEnum::Image->toString())]),
-            MediaTypeEnum::Audio    => array_merge($this->storeAudio(), ['media_type' => strtolower(MediaTypeEnum::Audio->toString())]),
-            MediaTypeEnum::Video    => array_merge($this->storeVideo(), ['media_type' => strtolower(MediaTypeEnum::Video->toString())]),
-            MediaTypeEnum::Document => array_merge($this->storeDocument(), ['media_type' => strtolower(MediaTypeEnum::Document->toString())]),
-            MediaTypeEnum::Archive  => array_merge($this->storeArchive(), ['media_type' => strtolower(MediaTypeEnum::Archive->toString())]),
+            MediaTypeEnum::Image    => array_merge($this->storeImage(), ['media_type' => MediaTypeEnum::Image->value]),
+            MediaTypeEnum::Audio    => array_merge($this->storeAudio(), ['media_type' => MediaTypeEnum::Audio->value]),
+            MediaTypeEnum::Video    => array_merge($this->storeVideo(), ['media_type' => MediaTypeEnum::Video->value]),
+            MediaTypeEnum::Document => array_merge($this->storeDocument(), ['media_type' => MediaTypeEnum::Document->value]),
+            MediaTypeEnum::Archive  => array_merge($this->storeArchive(), ['media_type' => MediaTypeEnum::Archive->value]),
             default                 => null,
         })->reset();
 
@@ -666,9 +694,9 @@ class MediaService
         $files = [];
         foreach ($this->getData() as $file) {
             $files[] = [
-                'group'          => $this->getDisk(),
+                'group'          => $this->getMediaDiskEnum()::fromName($this->getDisk())->value,
                 'category'       => $file['media_type'],
-                'mediaable_id'   => $this->getModel()->id,
+                'mediaable_id'   => $model->id,
                 'mediaable_type' => get_morphs_maps($model::class),
                 'media_url'      => $file['media']['url'],
                 'thumb_url'      => $file['thumb']['url'] ?? $file['media']['url'],
@@ -685,7 +713,7 @@ class MediaService
         }
 
         foreach (array_chunk($files, 500) as $filesChunk) {
-            DB::table(get_model_table($model))->insert($filesChunk);
+            DB::table(get_model_table(Media::class))->insert($filesChunk);
         }
 
         $this->setIds(

@@ -5,7 +5,6 @@ namespace AbdullahMateen\LaravelHelpingMaterial\Traits\Media;
 
 use Exception;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Image;
 use Intervention\Image\ImageManager;
@@ -23,10 +22,6 @@ trait ImageTrait
         $path     = $this->getPath();
         $fileInfo = $this->fileInformation();
         $filename = $fileInfo['name'];
-
-        if (!Storage::disk($disk)->directoryExists($path)) {
-            File::makeDirectory(storage_path("app/$disk/$path"), 0755, true);
-        }
 
         $mediaInfo = $this->generateImage($file, $path, $disk, $filename);
         if ($this->getHasThumbnail()) {
@@ -114,12 +109,6 @@ trait ImageTrait
             default                        => throw new Exception("Unable to recognize file. file type is [" . (get_debug_type($media)) . "]")
         };
 
-        $path = trim("$path/$filename", '/');
-        return [
-            'name' => $filename,
-            'path' => trim(sprintf("%s/%s", $disk, $path), '/'),                              // Storage::disk($disk)->path($path),
-            'size' => Storage::disk($disk)->size($path),          // Storage::disk($disk)->size($path),
-            'url'  => sprintf("%s/%s", $disk, $path),    // Storage::disk($disk)->url($path),
-        ];
+        return $this->generateFileAttributes($disk, $path, $filename);
     }
 }
