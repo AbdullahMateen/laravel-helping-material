@@ -14,7 +14,6 @@ enum MediaDiskEnum: int implements ColorsInterface
     case Placeholders = 3;
     case Local = 4;
     case Public = 5;
-    case S3 = 6;
 
     /**
      * @param string $name
@@ -29,7 +28,6 @@ enum MediaDiskEnum: int implements ColorsInterface
             'placeholders' => self::Placeholders,
             'local'        => self::Local,
             'public'       => self::Public,
-            's3'           => self::S3,
         };
     }
 

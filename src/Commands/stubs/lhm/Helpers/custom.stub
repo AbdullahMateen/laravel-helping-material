@@ -56,37 +56,41 @@ if (!function_exists('filesystems_setup')) {
     {
         $disks  = [];
         $shared = isset($sharedPath) && $shared;
+        $folder = config('lhm.storage.folder', 'storage');
 
         if ($shared) {
-            $links[public_path('media/public')] = "$sharedPath/public";
+            $links[public_path("$folder/public")] = "$sharedPath/public";
         } else {
-            $links = [public_path('media/public') => storage_path('app/public')];
+            $links = [public_path("$folder/public") => storage_path('app/public')];
         }
 
         foreach (MediaDiskEnum::cases() as $enum) {
             $key   = strtolower($enum->name);
+            if ($key === 'local') $key = '';
             $value = $key;
 
-            $disks[$key] = [
+            if ($value === 'public') $value = '';
+
+            $disks[blank($key) ? 'local' : $key] = [
                 'driver'     => 'local',
-                'root'       => storage_path("app/$key"),
-                'url'        => app_asset_url() . "/media/$value",
+                'root'       => $shared ? "$sharedPath/$key" : storage_path("app/$key"),
+                'url'        => app_asset_url() . "/$folder/$value",
                 'visibility' => 'public',
             ];
 
             if ($shared) {
-                $links[public_path("media/$key")] = "$sharedPath/$key";
+                $links[public_path("$folder/$value")] = "$sharedPath/$key";
             } else {
-                $links[public_path("media/$key")] = storage_path("app/$value");
+                $links[public_path("$folder/$value")] = storage_path("app/$key");
             }
         }
 
-        $disks['public'] = [
-            'driver'     => 'local',
-            'root'       => storage_path('app/public'),
-            'url'        => app_url() . '/media/public',
-            'visibility' => 'public',
-        ];
+//        $disks['public'] = [
+//            'driver'     => 'local',
+//            'root'       => $shared ? "$sharedPath/public" : storage_path("app/public"),
+//            'url'        => app_url() . "/$folder/public",
+//            'visibility' => 'public',
+//        ];
 
         return [
             'disks' => $disks,

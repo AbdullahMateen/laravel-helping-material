@@ -34,7 +34,9 @@ class MediaService
     |--------------------------------------------------------------------------
     */
 
-    private mixed $mediaDiskEnum = null;
+    private bool        $isSharedStorage   = false;
+    private string|null $sharedStoragePath = null;
+    private mixed       $mediaDiskEnum     = null;
 
     private Closure|string|array|bool $name = false;
 
@@ -62,6 +64,18 @@ class MediaService
 
     private Model|null $model = null;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Constructor
+    |--------------------------------------------------------------------------
+    */
+
+    public function __construct()
+    {
+        $this->isSharedStorage   = config('lhm.storage.shared.enabled');
+        $this->sharedStoragePath = config('lhm.storage.shared.path');
+        $this->mediaDiskEnum     = config('lhm.media_service.media_disk_enum');
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -71,7 +85,7 @@ class MediaService
 
     public function getMediaDiskEnum()
     {
-        return $this->mediaDiskEnum ?? config('lhm.media_service.media_disk_enum');
+        return $this->mediaDiskEnum;
     }
 
     public function mediaDiskEnum($mediaDiskEnum = null)
@@ -516,12 +530,7 @@ class MediaService
 
     private function ensureFolderExists($disk, $path)
     {
-        if (Storage::disk($disk)->directoryExists($path)) return;
-
-        match ($disk) {
-            'local' => File::makeDirectory(storage_path("app/$path"), 0755, true),
-            default => File::makeDirectory(storage_path("app/$disk/$path"), 0755, true)
-        };
+        File::ensureDirectoryExists(Storage::disk($disk)->path($path), 0755, true);
     }
 
     private function resolveFilePath($disk, $path)
