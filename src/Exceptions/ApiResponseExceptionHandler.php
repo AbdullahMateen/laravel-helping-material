@@ -12,7 +12,7 @@ class ApiResponseExceptionHandler
 {
     use ApiResponseTrait, ApiExceptionHandlerTrait;
 
-    public static function setup($exceptions)
+    public static function handle($exceptions)
     {
         $exceptions->render(function (ValueError $error, \Illuminate\Http\Request $request) {
             return (new self)->handleErrorValue($request, $error);

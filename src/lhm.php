@@ -15,7 +15,7 @@ return [
     */
     'api'           => [
         'response_keys' => [
-            'snake_case' => true,
+            'snake_case' => env('LHM_SNAKE_CASE', false),
         ],
     ],
 
@@ -31,7 +31,7 @@ return [
     |
     */
     'models'        => [
-        'should_be_strict' => true,
+        'should_be_strict' => env('LHM_SHOULD_BE_STRICT', false),
     ],
 
     /*
@@ -48,7 +48,7 @@ return [
     */
     'storage'       => [
         // The default folder name for symbolic links in the public directory.
-        'folder' => 'storage',
+        'folder' => env('STORAGE_FOLDER', 'storage'),
 
         // Shared storage configuration.
         'shared'  => [
