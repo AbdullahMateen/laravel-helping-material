@@ -120,11 +120,11 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
                 return new LhmPublishCommand($app['files']);
             }
         );
-        $this->commands([
-            LhmMakeEnumCommand::class,
+        $this->commands(array_filter([
+            $this->app->version()[0] >= 10 ? LhmMakeEnumCommand::class : null,
             LhmMakeModelCommand::class,
             'command.lhm.publish',
-        ]);
+        ]));
     }
 
     private function registerMacros()

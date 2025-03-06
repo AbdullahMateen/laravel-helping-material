@@ -87,12 +87,12 @@ trait ApiExceptionHandlerTrait
         };
     }
 
-    private function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception)
+    protected function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception)
     {
         return response()->json(['message' => $exception->getMessage()], 401);
     }
 
-    private function convertValidationExceptionToResponse(ValidationException $e, $request)
+    protected function convertValidationExceptionToResponse(ValidationException $e, $request)
     {
         if ($e->response) {
             return $e->response;
