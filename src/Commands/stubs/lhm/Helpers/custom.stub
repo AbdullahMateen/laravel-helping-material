@@ -172,7 +172,7 @@ if (!function_exists('get_morphs_maps')) {
         ];
 
         if (isset($class)) {
-            $class = $class instanceof Model && PHP_VERSION[0] <= 7 ? get_class($class) : $class::class;
+            $class = $class instanceof Model ? $class::class : $class;
             return array_search($class, $maps);
         }
 

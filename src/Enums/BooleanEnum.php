@@ -9,8 +9,8 @@ enum BooleanEnum: int implements ColorsInterface
 {
     use GeneralTrait;
 
-    case No = 0;
     case Yes = 1;
+    case No = 0;
 
     /**
      * @return string

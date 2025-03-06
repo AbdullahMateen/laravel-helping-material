@@ -775,9 +775,9 @@ if (!function_exists('get_lat_lng_from_address')) {
      *
      * @return array|null
      */
-    function get_lat_lng_from_address(string $address): ?array
+    function get_lat_lng_from_address(string $address, $apiKey = null): ?array
     {
-        $apiKey = config('services.google.map.api_key');
+        $apiKey = $apiKey ?? config('services.google.map.api_key');
 
         try {
             $address = str_replace(" ", "+", $address);
@@ -902,8 +902,8 @@ if (!function_exists('array_keys_to_snake_case')) {
                 $item = $item->toArray(request());
             }
 
-            if (is_array($item)) $snakeCaseArray[Str::snake(str_replace(' ', '_', $key))] = array_keys_to_snake_case($item);
-            else $snakeCaseArray[Str::snake(str_replace(' ', '_', $key))] = $item;
+            if (is_array($item)) $snakeCaseArray[str_replace('__', '_', str_replace('._', '.', Str::snake(str_replace(' ', '_', $key))))] = array_keys_to_snake_case($item);
+            else $snakeCaseArray[str_replace('__', '_', Str::snake(str_replace(' ', '_', $key)))] = $item;
         }
         return $snakeCaseArray;
     }

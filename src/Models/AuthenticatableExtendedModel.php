@@ -7,9 +7,12 @@ use AbdullahMateen\LaravelHelpingMaterial\Interfaces\ColorsInterface;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\AuthorizationTrait;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\ModelFetchTrait;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\ScopeTrait;
+use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\UserNotificationsTrait;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\ValidationRulesHelperTrait;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model\ValidationTrait;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * @method static columns()
@@ -21,9 +24,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static inactive()
  * @method static blocked()
  */
-class ExtendedModel extends Model implements ColorsInterface
+class AuthenticatableExtendedModel extends Authenticatable implements ColorsInterface
 {
-    use AuthorizationTrait, ModelFetchTrait, ScopeTrait, ValidationTrait, ValidationRulesHelperTrait;
+    use HasFactory, Notifiable,
+        AuthorizationTrait, ModelFetchTrait, UserNotificationsTrait,
+        ScopeTrait, ValidationTrait, ValidationRulesHelperTrait;
 
     /*
     |--------------------------------------------------------------------------
@@ -33,9 +38,9 @@ class ExtendedModel extends Model implements ColorsInterface
 
     protected $guarded = [];
 
-    protected $casts = [
-        'status' => StatusEnum::class,
-    ];
+    protected $hidden = ['password', 'remember_token',];
+
+    protected $casts = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -78,6 +83,13 @@ class ExtendedModel extends Model implements ColorsInterface
     |--------------------------------------------------------------------------
     */
 
+    public function scopeColumns($query, $columns = [], $overwrite = false)
+    {
+        $default = ['id', 'firstname', 'lastname'];
+        $columns = is_array($columns) ? $columns : explode(',', $columns);
+        $columns = $overwrite ? $columns : array_merge($default, $columns);
+        return $query->select($columns);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -106,6 +118,10 @@ class ExtendedModel extends Model implements ColorsInterface
     |--------------------------------------------------------------------------
     */
 
+    public function getNameAttribute()
+    {
+        return trim("$this->firstname $this->lastname");
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -119,6 +135,26 @@ class ExtendedModel extends Model implements ColorsInterface
         $this->statusColor = method_exists($this, 'statusColor') ? $this->statusColor() : '';
 
         return $this;
+    }
+
+    public function isLevel($level)
+    {
+        return is_array($level) ? in_array($this->level, $level) : $this->level == $level;
+    }
+
+    public function isRole($role)
+    {
+        return $this->role == $role;
+    }
+
+    public function isActive()
+    {
+        return $this->casts['status']::Active->equalsTo($this->status->value);
+    }
+
+    public function isBlocked()
+    {
+        return $this->casts['status']::Blocked->equalsTo($this->status->value);
     }
 
     public function deletable()
@@ -159,6 +195,20 @@ class ExtendedModel extends Model implements ColorsInterface
     public function statusColor()
     {
         return $this->status instanceof \BackedEnum ? $this->status->color() : StatusEnum::tryFrom($this->status)?->color();
+    }
+
+    /**
+     * @param string|null $token
+     *
+     * @return $this
+     */
+    public function manageDeviceToken(string $token = null): static
+    {
+        if (isset($token) && $this->device_token !== $token) {
+            $this->update(['device_token' => $token]);
+        }
+
+        return $this;
     }
 
     /*

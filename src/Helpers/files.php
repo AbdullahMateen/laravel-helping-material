@@ -30,6 +30,7 @@ if (!function_exists('get_enums')) {
 
         $files = File::allFiles(app_path($folders));
         foreach ($files as $fi => $file) {
+            $enums[$fi]   = [];
             $value        = null;
             $filename     = $file->getFilenameWithoutExtension();
             $relativePath = Str::replaceArray('/', ['\\'], $file->getRelativePath()); //  str($file->getRelativePath())->replace('/', '\\')->value();

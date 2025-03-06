@@ -9,12 +9,12 @@ enum AccountStatusEnum: int implements ColorsInterface
 {
     use GeneralTrait;
 
-    case Pending = 0;
-    case Unverified = 1;
-    case Active = 2;
-    case Inactive = 3;
-    case Suspend = 4;
-    case Blocked = 5;
+    case Pending = 1;
+    case Unverified = 2;
+    case Active = 3;
+    case Inactive = 4;
+    case Suspend = 5;
+    case Blocked = 6;
 
     /**
      * @return AccountStatusEnum[]

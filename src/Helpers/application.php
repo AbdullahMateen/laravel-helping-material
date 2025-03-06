@@ -327,50 +327,6 @@ if (!function_exists('goto_route_decrypt')) {
 
 /* ==================== General ==================== */
 
-if (!function_exists('app_logo')) {
-    /**
-     * @param string $logo
-     * @param string $theme
-     *
-     * @return string
-     */
-    function app_logo(string $logo = 'icon', string $theme = 'light'): string
-    {
-        return match ($logo) {
-            'icon'  => asset("assets/images/$theme/logo1.png"),
-            'sm'    => asset("assets/images/$theme/logo2.png"),
-            'lg'    => asset("assets/images/$theme/logo3.png"),
-            'full'  => asset("assets/images/$theme/logo4.png"),
-            'text'  => asset("assets/images/$theme/logo5.png"),
-            default => asset("assets/images/$theme/logo6.png"),
-        };
-    }
-}
-
-if (!function_exists('app_copyright')) {
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
-    function app_copyright(string $name = 'Website'): string
-    {
-        return sprintf('Copyright © %s %s. All rights reserved', now_now()->format('Y'), app_name($name));
-    }
-}
-
-if (!function_exists('app_copyright_long')) {
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
-    function app_copyright_long(string $name = 'Website'): string
-    {
-        return app_copyright($name);
-    }
-}
-
 if (!function_exists('webpage_title')) {
     /**
      * @param string $title

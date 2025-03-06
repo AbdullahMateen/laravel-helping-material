@@ -2,9 +2,8 @@
 
 namespace AbdullahMateen\LaravelHelpingMaterial\Traits\General\Model;
 
-use AbdullahMateen\LaravelHelpingMaterial\Enums\StatusEnum;
-use AbdullahMateen\LaravelHelpingMaterial\Enums\User\AccountStatusEnum;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @method  columns
@@ -44,7 +43,7 @@ trait ScopeTrait
     public function scopeAuth($query, $columnName = 'user_id', $authId = null)
     {
         if (!auth_check()) return $query;
-        return $query->byUser($columnName, $authId);
+        return $query->byUser(get_model_table(get_called_class()) . ".$columnName", $authId);
     }
 
     /**
@@ -57,7 +56,7 @@ trait ScopeTrait
     public function scopeByUser($query, $columnName = 'user_id', $userId = null)
     {
         $authId = $userId ?? auth_id();
-        return $query->where($columnName, '=', $authId);
+        return $query->where(get_model_table(get_called_class()) . ".$columnName", '=', $authId);
     }
 
     /**
@@ -69,7 +68,7 @@ trait ScopeTrait
     public function scopeByLevel($query, $levels = null)
     {
         $levels = is_array($levels) ? $levels : explode(',', $levels);
-        return $query->whereIn('level', $levels);
+        return $query->whereIn(get_model_table(get_called_class()) . ".level", $levels);
     }
 
     /**
@@ -89,7 +88,7 @@ trait ScopeTrait
 
         $start = $dateRange[0] ?? $dateRange[1] ?? null;
         $end   = $dateRange[1] ?? $dateRange[0] ?? null;
-        return $query->whereDate($column, '>=', $start)->whereDate($column, '<=', $end);
+        return $query->whereDate(get_model_table(get_called_class()) . ".$column", '>=', $start)->whereDate(get_model_table(get_called_class()) . ".$column", '<=', $end);
     }
 
     /**
@@ -116,10 +115,9 @@ trait ScopeTrait
      */
     public function scopeActive($query)
     {
-        return match ($this->casts['status']) {
-            StatusEnum::class        => $query->where(get_model_table(get_called_class()) . '.status', '=', StatusEnum::Active),
-            AccountStatusEnum::class => $query->where(get_model_table(get_called_class()) . '.status', '=', AccountStatusEnum::Active),
-            default                  => $query->where(get_model_table(get_called_class()) . '.status', '=', 1)
+        return match (true) {
+            $this->status instanceof \BackedEnum => $query->where(get_model_table(get_called_class()) . '.status', '=', $this->casts['status']::Active),
+            default                              => $query->where(get_model_table(get_called_class()) . '.status', '=', 1)
         };
     }
 
@@ -130,10 +128,9 @@ trait ScopeTrait
      */
     public function scopeInActive($query)
     {
-        return match ($this->casts['status']) {
-            StatusEnum::class        => $query->where(get_model_table(get_called_class()) . '.status', '=', StatusEnum::Inactive),
-            AccountStatusEnum::class => $query->where(get_model_table(get_called_class()) . '.status', '=', AccountStatusEnum::Inactive),
-            default                  => $query->where(get_model_table(get_called_class()) . '.status', '=', 0)
+        return match (true) {
+            $this->status instanceof \BackedEnum                => $query->where(get_model_table(get_called_class()) . '.status', '=', $this->casts['status']::Inactive),
+            default                                             => $query->where(get_model_table(get_called_class()) . '.status', '=', 0)
         };
     }
 
@@ -144,6 +141,10 @@ trait ScopeTrait
      */
     public function scopeBlocked($query)
     {
-        return $query->where(get_model_table(get_called_class()) . '.status', '=', AccountStatusEnum::Blocked);
+        return match (true) {
+            $this->status instanceof \BackedEnum                => $query->where(get_model_table(get_called_class()) . '.status', '=', $this->casts['status']::Blocked),
+            default                                             => throw ValidationException::withMessages(['Invalid Status provided.'])
+        };
+        // return $query->where(get_model_table(get_called_class()) . '.status', '=', AccountStatusEnum::Blocked);
     }
 }
