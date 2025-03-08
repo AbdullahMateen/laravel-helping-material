@@ -16,28 +16,38 @@ use Illuminate\Support\Str;
 if (!function_exists('get_enums')) {
     /**
      * @param string $key value,name
-     * @param string $baseEnumFolderPath
+     * @param string $namespace
      *
      * @return array
      */
-    function get_enums(string $key = 'value', string $baseEnumFolderPath = 'App\Enums'): array
+    function get_enums(array $filters = null, string $key = 'value', string $namespace = 'App\Enums'): array
     {
         $enums = [];
 
-        $folders = explode('\\', $baseEnumFolderPath);
+        $folders = explode('\\', $namespace);
         array_shift($folders);
         $folders = implode('\\', array_map('ucwords', $folders));
 
         $files = File::allFiles(app_path($folders));
         foreach ($files as $fi => $file) {
-            $enums[$fi]   = [];
-            $value        = null;
             $filename     = $file->getFilenameWithoutExtension();
-            $relativePath = Str::replaceArray('/', ['\\'], $file->getRelativePath()); //  str($file->getRelativePath())->replace('/', '\\')->value();
-            $path         = empty($relativePath) ? 'General' : $relativePath;
+            $relativePath = Str::replaceArray('/', ['\\'], $file->getRelativePath());
 
-            $class            = Str::replaceArray('\\\\', ['\\'], "$baseEnumFolderPath\\$relativePath\\$filename"); //  str("$baseEnumFolderPath\\$relativePath\\$filename")->replace('\\\\', '\\')->value();
-            $value[$filename] = $class::toFullArray('cases', $key);
+            $dotNotationFile = trim(collect(explode('\\', $relativePath))->map(fn ($segment) => Str::snake($segment))->implode('.') . '.' . Str::snake($filename), '.');
+            if (isset($filters) && !collect($filters)->filter(fn ($value) => explode(':', $value)[0] === $dotNotationFile)->count()) continue;
+
+            $enums[$fi] = [];
+            $value      = null;
+            $path       = empty($relativePath) ? 'General' : $relativePath;
+
+            $class = Str::replaceArray('\\\\', ['\\'], "$namespace\\$relativePath\\$filename");
+
+            $filePath = collect($filters)->first(fn ($value, $key) => explode(':', $value)[0] === $dotNotationFile);
+            $cases    = strpos($filePath, ':') ? explode(':', $filePath)[1] : 'cases';
+            foreach (arrayify($cases) as $case) {
+                $value[$filename] = array_replace($value[$filename] ?? [], $class::toFullArray($case, $key));
+            }
+
             set_nested_array_value($enums[$fi], $path, $value, '\\');
         }
 
