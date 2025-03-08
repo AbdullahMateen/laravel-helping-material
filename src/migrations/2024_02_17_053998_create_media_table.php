@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('media_url', 250)->nullable()->default(null);
             $table->string('thumb_url', 250)->nullable()->default(null);
 
+            $table->string('name', 80)->nullable()->default(null);
             $table->string('media_name', 80)->nullable()->default(null);
             $table->string('thumb_name', 80)->nullable()->default(null);
 

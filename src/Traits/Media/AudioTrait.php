@@ -14,7 +14,7 @@ trait AudioTrait
         $disk     = $this->getDisk();
         $path     = $this->getPath();
         $fileInfo = $this->fileInformation();
-        $filename = $fileInfo['name'];
+        $filename = $fileInfo['unique'];
 
         $mediaInfo = $this->generateAudio($this->getFile(), $path, $disk, $filename);
         if ($this->getHasThumbnail()) {

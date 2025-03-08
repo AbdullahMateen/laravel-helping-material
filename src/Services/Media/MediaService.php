@@ -554,10 +554,11 @@ class MediaService
         $path = trim("$path/$filename", '/');
 
         return [
-            'name' => $filename,
-            'path' => $this->resolveFilePath($disk, $path),   // Storage::disk($disk)->path($path),
-            'size' => Storage::disk($disk)->size($path),      // Storage::disk($disk)->size($path),
-            'url'  => $this->resolveFileUrl($disk, $path),    // Storage::disk($disk)->url($path),
+            'name'   => $this->fileInformation()['_original'],
+            'unique' => $filename,
+            'path'   => $this->resolveFilePath($disk, $path),   // Storage::disk($disk)->path($path),
+            'size'   => Storage::disk($disk)->size($path),      // Storage::disk($disk)->size($path),
+            'url'    => $this->resolveFileUrl($disk, $path),    // Storage::disk($disk)->url($path),
         ];
     }
 
@@ -672,9 +673,11 @@ class MediaService
     /**
      * @return array
      */
-    public function getIds(): array
+    public function getIds($reset = true): array
     {
-        return array_filter($this->ids);
+        $ids = array_filter($this->ids);
+        if ($reset) $this->setIds([], true);
+        return $ids;
     }
 
     /**
@@ -722,8 +725,9 @@ class MediaService
                 'mediaable_type' => isset($model) ? get_morphs_maps($model::class) : null,
                 'media_url'      => $file['media']['url'],
                 'thumb_url'      => $file['thumb']['url'] ?? $file['media']['url'],
-                'media_name'     => $file['media']['name'],
-                'thumb_name'     => $file['thumb']['name'] ?? $file['media']['name'],
+                'name'           => $file['media']['name'],
+                'media_name'     => $file['media']['unique'],
+                'thumb_name'     => $file['thumb']['unique'] ?? $file['media']['unique'],
                 'path'           => $file['media']['path'],
                 'type'           => $file['type'],
                 'extension'      => $file['extension'],
