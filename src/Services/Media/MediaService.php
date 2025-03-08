@@ -426,10 +426,10 @@ class MediaService
     private function resolveFile(Image|string|UploadedFile|null $file): Image|UploadedFile
     {
         return match (true) {
-            File::exists($file)    => path_to_uploaded_file($file),
-            is_valid_url($file)    => url_to_uploaded_file($file, 'temporary.png'),
-            is_base64_image($file) => base64_to_uploaded_file($file, 'temporary.png'),
-            default                => $file
+            is_string($file) && File::exists($file) => path_to_uploaded_file($file),
+            is_valid_url($file)                     => url_to_uploaded_file($file, 'temporary.png'),
+            is_base64_image($file)                  => base64_to_uploaded_file($file, 'temporary.png'),
+            default                                 => $file
         };
     }
 
