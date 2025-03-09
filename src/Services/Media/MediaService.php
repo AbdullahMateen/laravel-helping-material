@@ -345,7 +345,7 @@ class MediaService
      */
     private function data(array $data, bool $fresh = false): static
     {
-        $this->data = $fresh ? $data : collect([...($this->data ?? []), $data])->unique('media.name')->toArray();
+        $this->data = $fresh ? $data : collect([...($this->data ?? []), $data])->unique('media.unique')->toArray();
         return $this;
     }
 
@@ -743,7 +743,7 @@ class MediaService
         }
 
         $this->setIds(
-            Media::toBase()->whereIn('media_name', $this->getData()->pluck('media.name')->all())->pluck('id')->all(),
+            Media::toBase()->whereIn('media_name', $this->getData()->pluck('media.unique')->all())->pluck('id')->all(),
             true,
         );
 
@@ -795,7 +795,7 @@ class MediaService
         }
 
         $this->setIds(
-            Media::toBase()->whereIn('media_name', $this->getData()->pluck('media.name')->all())->pluck('id')->all(),
+            Media::toBase()->whereIn('media_name', $this->getData()->pluck('media.unique')->all())->pluck('id')->all(),
             true,
         );
 
