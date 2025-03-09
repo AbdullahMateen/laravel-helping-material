@@ -2,9 +2,7 @@
 
 namespace AbdullahMateen\LaravelHelpingMaterial\Services\Media;
 
-use AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaDiskEnum;
 use AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaTypeEnum;
-use AbdullahMateen\LaravelHelpingMaterial\Models\Media;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\Media\ArchiveTrait;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\Media\AudioTrait;
 use AbdullahMateen\LaravelHelpingMaterial\Traits\Media\DocumentTrait;
@@ -34,9 +32,10 @@ class MediaService
     |--------------------------------------------------------------------------
     */
 
+    private mixed       $mediaModel        = null;
+    private mixed       $mediaDiskEnum     = null;
     private bool        $isSharedStorage   = false;
     private string|null $sharedStoragePath = null;
-    private mixed       $mediaDiskEnum     = null;
 
     private Closure|string|array|bool $name = false;
 
@@ -72,9 +71,10 @@ class MediaService
 
     public function __construct()
     {
+        $this->mediaModel        = config('lhm.media_service.model');
+        $this->mediaDiskEnum     = config('lhm.media_service.media_disk_enum');
         $this->isSharedStorage   = config('lhm.storage.shared.enabled');
         $this->sharedStoragePath = config('lhm.storage.shared.path');
-        $this->mediaDiskEnum     = config('lhm.media_service.media_disk_enum');
     }
 
     /*
@@ -83,6 +83,19 @@ class MediaService
     |--------------------------------------------------------------------------
     */
 
+    /* ==================== Media Model ==================== */
+    public function getMediaModel()
+    {
+        return $this->mediaModel;
+    }
+
+    public function mediaModel($mediaModel = null)
+    {
+        $this->mediaModel = $mediaModel;
+        return $this;
+    }
+
+    /* ==================== Media Disk Enum ==================== */
     public function getMediaDiskEnum()
     {
         return $this->mediaDiskEnum;
@@ -91,6 +104,30 @@ class MediaService
     public function mediaDiskEnum($mediaDiskEnum = null)
     {
         $this->mediaDiskEnum = $mediaDiskEnum;
+        return $this;
+    }
+
+    /* ==================== Shared Storage ==================== */
+    private function getIsSharedStorage()
+    {
+        return $this->isSharedStorage;
+    }
+
+    private function isSharedStorage($isSharedStorage = false)
+    {
+        $this->isSharedStorage = $isSharedStorage;
+        return $this;
+    }
+
+    /* ==================== Shared Storage Path ==================== */
+    private function getSharedStoragePath()
+    {
+        return $this->sharedStoragePath;
+    }
+
+    private function sharedStoragePath($sharedStoragePath = null)
+    {
+        $this->sharedStoragePath = $sharedStoragePath;
         return $this;
     }
 
@@ -738,12 +775,13 @@ class MediaService
             ];
         }
 
+        $mediaClass = $this->getMediaModel();
         foreach (array_chunk($files, 500) as $filesChunk) {
-            DB::table(get_model_table(Media::class))->insert($filesChunk);
+            DB::table(get_model_table($mediaClass::class))->insert($filesChunk);
         }
 
         $this->setIds(
-            Media::toBase()->whereIn('media_name', $this->getData()->pluck('media.unique')->all())->pluck('id')->all(),
+            $mediaClass::toBase()->whereIn('media_name', $this->getData()->pluck('media.unique')->all())->pluck('id')->all(),
             true,
         );
 
@@ -751,19 +789,20 @@ class MediaService
     }
 
     /**
-     * @param Media|array|string $media
+     * @param Model|array|string $media
      * @param mixed              $disk
      *
      * @return mixed
      * @throws Exception
      */
-    public function update(Media|array|string $media, mixed $disk = null, $column = 'id'): mixed
+    public function update(Model|array|string $media, mixed $disk = null, $column = 'id'): mixed
     {
         $this->when(isset($disk), fn () => $this->disk($disk));
 
-        $isMediaInstance = $media instanceof Media;
+        $mediaClass = $this->getMediaModel();
+        $isMediaInstance = $media instanceof $mediaClass;
         if (!$isMediaInstance) {
-            $medias = Media::whereIn($column, is_array($media) ? $media : explode(',', $media))->get();
+            $medias = $mediaClass::whereIn($column, is_array($media) ? $media : explode(',', $media))->get();
 
             if ($medias->count() !== 1 && $medias->count() !== $this->getData()->count()) {
                 throw new RuntimeException('Either pass single instance of media or id, or pass the same number of ids as the files');
@@ -795,7 +834,7 @@ class MediaService
         }
 
         $this->setIds(
-            Media::toBase()->whereIn('media_name', $this->getData()->pluck('media.unique')->all())->pluck('id')->all(),
+            $mediaClass::toBase()->whereIn('media_name', $this->getData()->pluck('media.unique')->all())->pluck('id')->all(),
             true,
         );
 
@@ -820,7 +859,7 @@ class MediaService
         }
 
         $values = is_array($values) ? $values : explode(',', $values);
-        $medias = Media::whereIn($column, $values)->get();
+        $medias = $this->getMediaModel()::whereIn($column, $values)->get();
 
         $this->setIds([], true);
         foreach ($medias as $media) {
@@ -871,7 +910,7 @@ class MediaService
     public function destroy(array|string $values, string $column = 'id', bool $removeFromStorage = true): static
     {
         $values = is_array($values) ? $values : explode(',', $values);
-        $query  = Media::whereIn($column, $values);
+        $query  = $this->getMediaModel()::whereIn($column, $values);
 
         $medias = $query->toBase()->select('id', 'group', 'media_name', 'path')->get();
 

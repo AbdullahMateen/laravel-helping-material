@@ -51,7 +51,7 @@ return [
         'folder' => env('STORAGE_FOLDER', 'storage'),
 
         // Shared storage configuration.
-        'shared'  => [
+        'shared' => [
             // Set to true to enable shared storage across projects.
             'enabled' => env('SHARED_STORAGE', false),
             // Define the path to the shared storage location.
@@ -70,6 +70,9 @@ return [
     |
     */
     'media_service' => [
+        // Class that defines media model.
+        'model'           => \AbdullahMateen\LaravelHelpingMaterial\Models\Media::class,
+
         // Class that defines available media disks.
         'media_disk_enum' => \AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaDiskEnum::class,
 
