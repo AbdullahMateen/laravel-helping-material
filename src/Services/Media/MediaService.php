@@ -777,7 +777,7 @@ class MediaService
 
         $mediaClass = $this->getMediaModel();
         foreach (array_chunk($files, 500) as $filesChunk) {
-            DB::table(get_model_table($mediaClass::class))->insert($filesChunk);
+            DB::table(get_model_table($mediaClass))->insert($filesChunk);
         }
 
         $this->setIds(
