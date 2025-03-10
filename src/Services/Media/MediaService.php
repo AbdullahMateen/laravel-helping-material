@@ -41,7 +41,7 @@ class MediaService
 
     private string|null $path = '';
 
-    private mixed $disk = 'public';
+    private mixed $disk = null;
 
     private MediaTypeEnum|null $mediaType = null;
 
@@ -497,7 +497,7 @@ class MediaService
     {
         $extensions = array_unique(
             array_filter(
-                array_map('strtolower', is_array($extensions) ? $extensions : explode(',', $extensions))
+                array_map('strtolower', arrayify($extensions))
             )
         );
 
@@ -591,11 +591,12 @@ class MediaService
         $path = trim("$path/$filename", '/');
 
         return [
-            'name'   => $this->fileInformation()['_original'],
-            'unique' => $filename,
-            'path'   => $this->resolveFilePath($disk, $path),   // Storage::disk($disk)->path($path),
-            'size'   => Storage::disk($disk)->size($path),      // Storage::disk($disk)->size($path),
-            'url'    => $this->resolveFileUrl($disk, $path),    // Storage::disk($disk)->url($path),
+            'name'      => $this->fileInformation()['_original'],
+            'unique'    => $filename,
+            'path'      => $path,   // Storage::disk($disk)->path($path),
+            'file_path' => $this->resolveFilePath($disk, $path),   // Storage::disk($disk)->path($path),
+            'size'      => Storage::disk($disk)->size($path),      // Storage::disk($disk)->size($path),
+            'url'       => $this->resolveFileUrl($disk, $path),    // Storage::disk($disk)->url($path),
         ];
     }
 
@@ -692,9 +693,9 @@ class MediaService
     public function removeFiles(array $files): static
     {
         foreach (array_filter($files) as $disk => $file) {
-            $path     = $this->getPath() ?? pathinfo($file, PATHINFO_DIRNAME);
+            $path     = pathinfo($file, PATHINFO_DIRNAME);
             $filename = pathinfo($file, PATHINFO_BASENAME);
-            $this->remove($filename, $path, $this->getDisk() ?? $disk);
+            $this->remove($filename, $path, $disk);
         }
         return $this;
     }
@@ -766,6 +767,7 @@ class MediaService
                 'media_name'     => $file['media']['unique'],
                 'thumb_name'     => $file['thumb']['unique'] ?? $file['media']['unique'],
                 'path'           => $file['media']['path'],
+                'file_path'      => $file['media']['file_path'],
                 'type'           => $file['type'],
                 'extension'      => $file['extension'],
                 'media_size'     => $file['media']['size'],
@@ -799,10 +801,10 @@ class MediaService
     {
         $this->when(isset($disk), fn () => $this->disk($disk));
 
-        $mediaClass = $this->getMediaModel();
+        $mediaClass      = $this->getMediaModel();
         $isMediaInstance = $media instanceof $mediaClass;
         if (!$isMediaInstance) {
-            $medias = $mediaClass::whereIn($column, is_array($media) ? $media : explode(',', $media))->get();
+            $medias = $mediaClass::whereIn($column, arrayify($media))->get();
 
             if ($medias->count() !== 1 && $medias->count() !== $this->getData()->count()) {
                 throw new RuntimeException('Either pass single instance of media or id, or pass the same number of ids as the files');
@@ -823,9 +825,11 @@ class MediaService
             $media->category   = $file['media_type'] ?? $media->category;
             $media->media_url  = $file['media']['url'];
             $media->thumb_url  = $file['thumb']['url'] ?? $file['media']['url'];
-            $media->media_name = $file['media']['name'];
-            $media->thumb_name = $file['thumb']['name'] ?? $file['media']['name'];
+            $media->name       = $file['media']['name'];
+            $media->media_name = $file['media']['unique'];
+            $media->thumb_name = $file['thumb']['unique'] ?? $file['media']['unique'];
             $media->path       = $file['media']['path'];
+            $media->file_path  = $file['media']['file_path'];
             $media->type       = $file['type'];
             $media->extension  = $file['extension'];
             $media->media_size = $file['media']['size'];
@@ -858,7 +862,7 @@ class MediaService
             throw new ModelNotFoundException("Unable to move file, Model is not provided");
         }
 
-        $values = is_array($values) ? $values : explode(',', $values);
+        $values = arrayify($values);
         $medias = $this->getMediaModel()::whereIn($column, $values)->get();
 
         $this->setIds([], true);
@@ -889,7 +893,8 @@ class MediaService
 
             $media->media_url = $this->resolveFileUrl($disk, trim("$path/$filename", '/')); // Storage::disk($disk)->url("$path/$filename");
             $media->thumb_url = $this->resolveFileUrl($disk, trim("$path/thumb_$filename", '/')); // Storage::disk($disk)->url("$path/thumb_$filename");
-            $media->path      = Storage::disk($disk)->path(trim("$path/$filename", '/'));
+            $media->path      = $path;
+            $media->file_path = Storage::disk($disk)->path(trim("$path/$filename", '/'));
             $media->save();
 
             $this->setIds($media->id);
@@ -909,7 +914,7 @@ class MediaService
      */
     public function destroy(array|string $values, string $column = 'id', bool $removeFromStorage = true): static
     {
-        $values = is_array($values) ? $values : explode(',', $values);
+        $values = arrayify($values);
         $query  = $this->getMediaModel()::whereIn($column, $values);
 
         $medias = $query->toBase()->select('id', 'group', 'media_name', 'path')->get();
@@ -924,7 +929,7 @@ class MediaService
         if ($removeFromStorage) {
             $this->removeFiles(
                 $medias->map(function ($media) {
-                    $media->full_path = "$media->path/$media->media_name";
+                    $media->full_path = $media->path;
                     return $media;
                 })->pluck('full_path', 'group')->all()
             );

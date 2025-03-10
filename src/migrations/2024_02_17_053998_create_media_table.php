@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
@@ -29,6 +28,7 @@ return new class extends Migration
             $table->string('thumb_name', 80)->nullable()->default(null);
 
             $table->string('path', 250)->nullable()->default(null);
+            $table->string('file_path', 250)->nullable()->default(null);
             $table->string('type', 80)->nullable()->default(null);
             $table->string('extension', 20)->nullable()->default(null);
 
