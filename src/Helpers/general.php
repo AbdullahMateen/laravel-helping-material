@@ -863,9 +863,9 @@ if (!function_exists('lat_long_dist_of_two_points')) {
 if (! function_exists('arrayify')) {
     function arrayify($value, $separator = ',', $default = [], $filter = true)
     {
-        $result = [];
         if (is_null($value)) $result = arrayify($default, $separator, [], $filter);
         elseif (!is_array($value)) $result = array_map('trim', explode($separator, $value));
+        else $result = $value;
         return $filter ? array_filter($result) : $result;
     }
 }

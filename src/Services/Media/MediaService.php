@@ -929,7 +929,7 @@ class MediaService
         if ($removeFromStorage) {
             $this->removeFiles(
                 $medias->map(function ($media) {
-                    $media->full_path = $media->path;
+                    $media->full_path = "$media->path/$media->media_name";
                     return $media;
                 })->pluck('full_path', 'group')->all()
             );
