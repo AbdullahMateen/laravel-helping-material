@@ -860,12 +860,19 @@ if (!function_exists('lat_long_dist_of_two_points')) {
 
 /* ==================== Arrays ==================== */
 
-if (! function_exists('arrayify')) {
+if (!function_exists('arrayify')) {
     function arrayify($value, $separator = ',', $default = [], $filter = true)
     {
-        if (is_null($value)) $result = arrayify($default, $separator, [], $filter);
-        elseif (!is_array($value)) $result = array_map('trim', explode($separator, $value));
-        else $result = $value;
+        $result = match (true) {
+            blank($value)                         => arrayify($default, $separator, [], $filter),
+            is_string($value), is_numeric($value) => array_map('trim', explode($separator, $value)),
+            default                               => is_array($value) ? $value : [$value],
+        };
+
+        //        if (is_null($value)) $result = arrayify($default, $separator, [], $filter);
+        //        elseif (is_string($value)) $result = array_map('trim', explode($separator, $value));
+        //        else $result = $value;
+
         return $filter ? array_filter($result) : $result;
     }
 }

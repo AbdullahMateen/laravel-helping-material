@@ -484,6 +484,7 @@ class MediaService
             in_array($extension, filled(config("lhm.media_service.extensions.video")) ? config("lhm.media_service.extensions.video") : MediaTypeEnum::Video->extensions(), true)          => MediaTypeEnum::Video,
             in_array($extension, filled(config("lhm.media_service.extensions.document")) ? config("lhm.media_service.extensions.document") : MediaTypeEnum::Document->extensions(), true) => MediaTypeEnum::Document,
             in_array($extension, filled(config("lhm.media_service.extensions.archive")) ? config("lhm.media_service.extensions.archive") : MediaTypeEnum::Archive->extensions(), true)    => MediaTypeEnum::Archive,
+            default => throw new Exception("Unable to resolve media type by extension '$extension'"),
         });
     }
 
