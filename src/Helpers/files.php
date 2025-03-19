@@ -206,14 +206,41 @@ if (!function_exists('is_base64_image')) {
      */
     function is_base64_image(string $base64): bool
     {
+        if (empty($base64) || !is_string($base64)) {
+            return false;
+        }
+
         // Remove data URI scheme if present
         $data = preg_replace('#^data:image/[^;]+;base64,#', '', $base64);
+
+        // Validate base64 format (only contains valid characters)
+        if (!preg_match('/^[a-zA-Z0-9\/+\r\n]+={0,2}$/', $data)) {
+            return false;
+        }
 
         // Decode the base64 string
         $decodedData = base64_decode($data, true);
 
+        // Debugging: Check if decoding was successful
+        if ($decodedData === false) {
+            error_log('Base64 decoding failed: Possibly an invalid or incomplete base64 string.');
+            return false;
+        }
+
+        // Debugging: Check the length of decoded data
+        if (strlen($decodedData) < 10) { // Typical image headers are longer
+            error_log('Decoded base64 string is too short to be an image.');
+            return false;
+        }
+
+        // Check if the decoded data is an image
+        if (@getimagesizefromstring($decodedData) === false) {
+            error_log('Decoded data is not a valid image.');
+            return false;
+        }
+
         // Check if the decoding was successful and the result is an image
-        return ($decodedData !== false) && (getimagesizefromstring($decodedData) !== false);
+        return true;// ($decodedData !== false) && (getimagesizefromstring($decodedData) !== false);
     }
 }
 
@@ -250,6 +277,8 @@ if (!function_exists('base64_to_uploaded_file')) {
      */
     function base64_to_uploaded_file(string $base64String, string $fileName, Closure $closure = null): UploadedFile
     {
+        if (!is_base64_image($base64String)) throw \Illuminate\Validation\ValidationException::withMessages(['file' => 'Invalid base64 image.']);
+
         // Remove data URI scheme if present
         $base64String = preg_replace('#^data:image/[^;]+;base64,#', '', $base64String);
 
