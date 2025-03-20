@@ -864,9 +864,10 @@ if (!function_exists('arrayify')) {
     function arrayify($value, $separator = ',', $default = [], $filter = true)
     {
         $result = match (true) {
+            is_array($value)                      => $value,
             blank($value)                         => arrayify($default, $separator, [], $filter),
             is_string($value), is_numeric($value) => array_map('trim', explode($separator, $value)),
-            default                               => is_array($value) ? $value : [$value],
+            default                               => [$value],
         };
 
         //        if (is_null($value)) $result = arrayify($default, $separator, [], $filter);
