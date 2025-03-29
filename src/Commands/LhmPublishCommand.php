@@ -44,17 +44,18 @@ class LhmPublishCommand extends Command
     {
         $options = [
             'All',
+            'Config         => Copy enum files',
             'Enums          => Copy enum files',
             'Exceptions     => Copy exceptions files',
             'Helpers        => Copy helper files',
             // 'Interfaces     => Copy interface files',
             'Middlewares    => Override middleware',
-            // 'Migrations     => Copy migrations',
+            'Migrations     => Copy migrations',
             'Models         => Override model files',
+            'Resources      => Copy resources',
             // 'Rules          => Override rule files',
             'Services       => Override service files',
             'Traits         => Override trait files',
-            'Resources      => Copy resources',
         ];
 
         $values = array_unique($this->choice(
@@ -80,6 +81,13 @@ class LhmPublishCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    public function publishConfig()
+    {
+        $this->filesystem->ensureDirectoryExists(base_path('config'));
+        $this->filesystem->copy("$this->basepath/src/lhm.php", base_path('config/lhm.php'));
+        return base_path('app/Enums');
     }
 
     public function publishEnums()
@@ -126,9 +134,9 @@ class LhmPublishCommand extends Command
 
     public function publishMigrations()
     {
-        // $this->filesystem->ensureDirectoryExists(base_path('database/migrations'));
-        // $this->filesystem->copyDirectory("$this->prefix/src/migrations/", base_path('database/migrations/'));
-        // return base_path('database/migrations');
+        $this->filesystem->ensureDirectoryExists(base_path('database/migrations'));
+        $this->filesystem->copyDirectory("$this->basepath/src/migrations/", base_path('database/migrations/'));
+        return base_path('database/migrations');
     }
 
     public function publishModels()
@@ -138,6 +146,14 @@ class LhmPublishCommand extends Command
         $this->filesystem->copy("$this->prefix/stubs/lhm/Models/Media.stub", base_path('app/Models/Media.php'));
 
         return base_path('app/Models');
+    }
+
+    public function publishResources()
+    {
+        $this->filesystem->ensureDirectoryExists(base_path('resources/sass/'));
+        $this->filesystem->copyDirectory("$this->basepath/src/resources/sass/", base_path('resources/sass/'));
+
+        return base_path('resources/sass');
     }
 
     public function publishRules()
@@ -162,13 +178,4 @@ class LhmPublishCommand extends Command
 
         return base_path('app/Traits');
     }
-
-    public function publishResources()
-    {
-        $this->filesystem->ensureDirectoryExists(base_path('resources/sass/'));
-        $this->filesystem->copyDirectory("$this->basepath/src/resources/sass/", base_path('resources/sass/'));
-
-        return base_path('resources/sass');
-    }
-
 }

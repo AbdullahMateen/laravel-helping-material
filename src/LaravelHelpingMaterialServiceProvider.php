@@ -48,7 +48,11 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
         }
 
         $this->app['router']->aliasMiddleware('authorize', AuthorizationMiddleware::class);
+
         $this->loadMigrationsFrom(__DIR__ . '/migrations');
+        $this->publishes([
+            __DIR__ . '/migrations' => database_path('migrations'),
+        ], 'laravel-helping-material-migrations');
 
         $this->registerFacades();
         $this->registerCommands();
