@@ -140,7 +140,7 @@ if (!function_exists('is_level')) {
             if (!isset($user)) {
                 $user = auth_user($guard);
             } else if (is_numeric($user)) {
-                $user = User::find($user);
+                $user = _get_user_model()::find($user);
             }
             return $user->isLevel($level);
         } catch (Exception $exception) {
@@ -209,7 +209,7 @@ if (!function_exists('is_me')) {
         try {
             if (!auth_check($guard)) return false;
             if (is_numeric($user)) {
-                $user = User::find($user);
+                $user = _get_user_model()::find($user);
             }
             return auth_id($guard) == $user->id;
         } catch (Exception $exception) {
@@ -231,7 +231,7 @@ if (!function_exists('get_user')) {
             if (!isset($user)) {
                 $user = auth_user($guard);
             } elseif (is_numeric($user)) {
-                $user = User::find($user);
+                $user = _get_user_model()::find($user);
             }
 
             return $user;
@@ -288,7 +288,7 @@ if (!function_exists('is_account_blocked')) {
     {
         try {
             $user = get_user($user, $guard);
-            return isset($user) ? $user->status == User::KEY_STATUS_BLOCKED : true;
+            return isset($user) ? $user->status == _get_user_model()::KEY_STATUS_BLOCKED : true;
         } catch (Exception $exception) {
             return true;
         }

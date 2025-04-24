@@ -1,6 +1,5 @@
 <?php
 
-use AbdullahMateen\LaravelHelpingMaterial\Enums\User\RoleEnum;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -8,6 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+
+
+if (!function_exists('_get_user_model')) {
+    function _get_user_model()
+    {
+        return config('lhm.models.user');
+    }
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -77,7 +84,7 @@ if (!function_exists('is_me')) {
         try {
             if (!auth_check($guard)) return false;
             if (is_numeric($user)) {
-                $user = User::find($user);
+                $user = _get_user_model()::find($user);
             }
             return auth_id($guard) == $user->id;
         } catch (Exception $exception) {
@@ -99,7 +106,7 @@ if (!function_exists('get_user')) {
             if (!isset($user)) {
                 $user = auth_user($guard);
             } elseif (is_numeric($user)) {
-                $user = User::find($user);
+                $user = _get_user_model()::find($user);
             }
 
             return $user;

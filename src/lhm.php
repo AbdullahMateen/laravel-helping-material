@@ -21,17 +21,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Model Strict Mode
+    | Models
     |--------------------------------------------------------------------------
     |
-    | This setting controls whether your package enforces strict model
-    | behavior via Laravel's Model::shouldBeStrict(). Enabling strict mode
+    | Strict Model Behavior
+    | This setting controls whether to enforces strict model behavior
+    | via Laravel's Model::shouldBeStrict(). Enabling strict mode
     | can help prevent issues such as lazy loading of relationships.
     | Set it to false to disable strict model behavior.
     |
+    | User Model
+    | This setting allows you to specify the user model class used
     */
     'models'        => [
         'should_be_strict' => env('LHM_SHOULD_BE_STRICT', false),
+
+        'user' => \App\Models\User::class,
     ],
 
     /*
@@ -39,7 +44,7 @@ return [
     | Storage Settings
     |--------------------------------------------------------------------------
     |
-    | These settings define how your package handles file storage.
+    | These settings define how to handles file storage.
     | - 'folder' specifies the folder name for symbolic links created by
     |   "php artisan storage:link".
     | - 'shared' enables you to use a shared storage location across multiple
