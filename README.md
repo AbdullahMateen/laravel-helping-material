@@ -25,6 +25,7 @@ It is designed for Laravel applications that need reusable project scaffolding p
 - [Publishing Files](#publishing-files)
 - [Artisan Commands](#artisan-commands)
 - [Helper Functions](#helper-functions)
+- [Upgrade Guide](#upgrade-guide)
 - [Enums](#enums)
 - [Models](#models)
 - [Middleware](#middleware)
@@ -227,6 +228,10 @@ $title = webpage_title('Dashboard');
 $route = route_url_to_name('https://example.test/dashboard');
 $formatted = display_number(12500.5);
 ```
+
+## Upgrade Guide
+
+Upgrading from `2.x` to `3.x` requires reviewing media service usage and any published overrides. See [UPGRADE-2.x-TO-3.x.md](./UPGRADE-2.x-TO-3.x.md).
 
 ## Enums
 
