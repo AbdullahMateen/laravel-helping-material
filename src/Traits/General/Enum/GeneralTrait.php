@@ -20,7 +20,7 @@ trait GeneralTrait
      */
     public static function asArray(): array
     {
-        $oClass    = new ReflectionClass(__CLASS__);
+        $oClass    = new ReflectionClass(static::class);
         $constants = $oClass->getReflectionConstants(1);
         $constants = collect($constants)->filter(fn ($c) => $c->class === $oClass->getName());
 
@@ -101,6 +101,8 @@ trait GeneralTrait
         }
 
         foreach (self::$function() as $item) {
+            $extra = [];
+
             foreach ($fns as $fn) {
                 $extra[$fn] = $item->$fn();
             }

@@ -1,6 +1,6 @@
 <?php
 
-namespace {{ namespace }};;
+namespace {{ namespace }};
 
 use AbdullahMateen\LaravelHelpingMaterial\Models\ExtendedModel;
 use AbdullahMateen\LaravelHelpingMaterial\Enums\StatusEnum;

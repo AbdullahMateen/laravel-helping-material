@@ -20,7 +20,7 @@ if (!function_exists('get_enums')) {
      *
      * @return array
      */
-    function get_enums(array $filters = null, string $key = 'value', string $namespace = 'App\Enums'): array
+    function get_enums(?array $filters = null, string $key = 'value', string $namespace = 'App\Enums'): array
     {
         $enums = [];
 
@@ -275,7 +275,7 @@ if (!function_exists('base64_to_uploaded_file')) {
      *
      * @return UploadedFile
      */
-    function base64_to_uploaded_file(string $base64String, string $fileName, Closure $closure = null): UploadedFile
+    function base64_to_uploaded_file(string $base64String, string $fileName, ?Closure $closure = null): UploadedFile
     {
         if (!is_base64_image($base64String)) throw \Illuminate\Validation\ValidationException::withMessages(['file' => 'Invalid base64 image.']);
 
@@ -295,7 +295,9 @@ if (!function_exists('base64_to_uploaded_file')) {
         $uploadedFile = new UploadedFile(
             $tempFilePath,
             $fileName,
-            mime_content_type($tempFilePath)
+            mime_content_type($tempFilePath),
+            null,
+            true,
         );
 
         // Optionally, you can delete the temporary file
@@ -313,22 +315,31 @@ if (!function_exists('url_to_uploaded_file')) {
      *
      * @return UploadedFile
      */
-    function url_to_uploaded_file(string $url, string $fileName = null, Closure $closure = null): UploadedFile
+    function url_to_uploaded_file(string $url, ?string $fileName = null, ?Closure $closure = null): UploadedFile
     {
         $tempFilePath = tempnam(sys_get_temp_dir(), 'url_to_uploaded_file');
 
         // Download the file from the URL
-        $fileContents = file_get_contents($url);
+        $fileContents = @file_get_contents($url);
+        if ($fileContents === false) {
+            throw new RuntimeException("Unable to download file from URL [$url].");
+        }
+
         file_put_contents($tempFilePath, $fileContents);
 
         // Determine file name if not provided
-        $fileName = $fileName ?: str(basename(parse_url($url, PHP_URL_PATH)))->slug('_')->value();
+        $resolvedFileName = basename((string) parse_url($url, PHP_URL_PATH));
+        $fileName = $fileName
+            ?: Str::of($resolvedFileName)->slug('_')->value()
+            ?: 'downloaded-file';
 
         // Create an UploadedFile instance
         $uploadedFile = new UploadedFile(
             $tempFilePath,
             $fileName,
             mime_content_type($tempFilePath),
+            null,
+            true,
         );
 
         // Optionally, you can delete the temporary file
@@ -347,7 +358,13 @@ if (!function_exists('path_to_uploaded_file')) {
      */
     function path_to_uploaded_file(string $path): UploadedFile
     {
-        return new UploadedFile($path, last(explode('/', $path)), mime_content_type($path));
+        return new UploadedFile(
+            $path,
+            basename(str_replace('\\', '/', $path)),
+            mime_content_type($path),
+            null,
+            true,
+        );
     }
 }
 

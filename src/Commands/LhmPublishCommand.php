@@ -8,7 +8,8 @@ use Illuminate\Filesystem\Filesystem;
 class LhmPublishCommand extends Command
 {
     private Filesystem $filesystem;
-    private string     $prefix;
+    private string $basepath;
+    private string $prefix;
 
     /**
      * The name and signature of the console command.
@@ -31,8 +32,8 @@ class LhmPublishCommand extends Command
     {
         parent::__construct();
         $this->filesystem = $filesystem;
-        $this->basepath   = base_path('vendor\abdullah-mateen\laravel-helping-material');
-        $this->prefix     = "$this->basepath\src\Commands";
+        $this->basepath   = dirname(__DIR__, 2);
+        $this->prefix     = __DIR__;
     }
 
     /**
@@ -40,7 +41,7 @@ class LhmPublishCommand extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         $options = [
             'All',
@@ -83,14 +84,15 @@ class LhmPublishCommand extends Command
         return Command::SUCCESS;
     }
 
-    public function publishConfig()
+    public function publishConfig(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('config'));
         $this->filesystem->copy("$this->basepath/src/lhm.php", base_path('config/lhm.php'));
-        return base_path('app/Enums');
+
+        return base_path('config');
     }
 
-    public function publishEnums()
+    public function publishEnums(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Enums/Media'));
         $this->filesystem->copy("$this->prefix/stubs/lhm/Enums/Publish/Media/MediaDiskEnum.stub", base_path('app/Enums/Media/MediaDiskEnum.php'));
@@ -101,7 +103,7 @@ class LhmPublishCommand extends Command
         return base_path('app/Enums');
     }
 
-    public function publishExceptions()
+    public function publishExceptions(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Exceptions'));
         $this->filesystem->copy("$this->prefix/stubs/lhm/Exceptions/ApiResponseExceptionHandler.stub", base_path('app/Exceptions/ApiResponseExceptionHandler.php'));
@@ -109,7 +111,7 @@ class LhmPublishCommand extends Command
         return base_path('app/Exceptions');
     }
 
-    public function publishHelpers()
+    public function publishHelpers(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Helpers'));
         $this->filesystem->copy("$this->prefix/stubs/lhm/Helpers/custom.stub", base_path('app/Helpers/custom.php'));
@@ -124,7 +126,7 @@ class LhmPublishCommand extends Command
         // return base_path('app/Interfaces');
     }
 
-    public function publishMiddlewares()
+    public function publishMiddlewares(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Http/Middleware'));
         $this->filesystem->copy("$this->prefix/stubs/lhm/Middleware/AuthorizationMiddleware.stub", base_path('app/Http/Middleware/AuthorizationMiddleware.php'));
@@ -132,14 +134,14 @@ class LhmPublishCommand extends Command
         return base_path('app/Http/Middleware');
     }
 
-    public function publishMigrations()
+    public function publishMigrations(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('database/migrations'));
         $this->filesystem->copyDirectory("$this->basepath/src/migrations/", base_path('database/migrations/'));
         return base_path('database/migrations');
     }
 
-    public function publishModels()
+    public function publishModels(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Models'));
         $this->filesystem->copy("$this->prefix/stubs/lhm/Models/ExtendedModel.stub", base_path('app/Models/ExtendedModel.php'));
@@ -148,7 +150,7 @@ class LhmPublishCommand extends Command
         return base_path('app/Models');
     }
 
-    public function publishResources()
+    public function publishResources(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('resources/sass/'));
         $this->filesystem->copyDirectory("$this->basepath/src/resources/sass/", base_path('resources/sass/'));
@@ -163,7 +165,7 @@ class LhmPublishCommand extends Command
         // return base_path('app/Rules');
     }
 
-    public function publishServices()
+    public function publishServices(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Services/Media'));
         $this->filesystem->copy("$this->prefix/stubs/lhm/Services/Media/MediaService.stub", base_path('app/Services/Media/MediaService.php'));
@@ -171,7 +173,7 @@ class LhmPublishCommand extends Command
         return base_path('app/Services');
     }
 
-    public function publishTraits()
+    public function publishTraits(): string
     {
         $this->filesystem->ensureDirectoryExists(base_path('app/Traits/General/Model'));
         $this->filesystem->copy("$this->prefix/stubs/lhm/Traits/General/Model/UserNotificationsTrait.stub", base_path('app/Traits/General/Model/UserNotificationsTrait.php'));

@@ -202,7 +202,7 @@ class AuthenticatableExtendedModel extends Authenticatable implements ColorsInte
      *
      * @return $this
      */
-    public function manageDeviceToken(string $token = null): static
+    public function manageDeviceToken(?string $token = null): static
     {
         if (isset($token) && $this->device_token !== $token) {
             $this->update(['device_token' => $token]);

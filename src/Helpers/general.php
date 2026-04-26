@@ -142,10 +142,10 @@ if (!function_exists('calculate_age')) {
      *
      * @return int|null
      */
-    function calculate_age(Carbon|string $dateOfBirth, Carbon|string $dateTill = null, bool $todayIncluded = true): int|null
+    function calculate_age(Carbon|string $dateOfBirth, Carbon|string|null $dateTill = null, bool $todayIncluded = true): int|null
     {
         try {
-            $dateTill    = Carbon::parse($dateTill, app_timezone());
+            $dateTill    = Carbon::parse($dateTill ?? now_now(), app_timezone());
             $dateOfBirth = Carbon::parse($dateOfBirth, app_timezone());
             return $todayIncluded
                 ? Carbon::parse($dateOfBirth)->diffInYears($dateTill)
@@ -165,13 +165,13 @@ if (!function_exists('is_age_acceptable')) {
      *
      * @return bool|null
      */
-    function is_age_acceptable(Carbon|string $dateOfBirth, Carbon|string $dateTill = null, string $operator = '<=', int $criteria = 16): bool|null
+    function is_age_acceptable(Carbon|string $dateOfBirth, Carbon|string|null $dateTill = null, string $operator = '<=', int $criteria = 16): bool|null
     {
         try {
             if (!in_array($operator, ["<", "lt", "<=", "le", ">", "gt", ">=", "ge", "==", "=", "eq", "!=", "<>", "ne"])) throw new InvalidArgumentException('invalid operator symbol provided.');
             $age = calculate_age(
                 Carbon::parse($dateOfBirth, app_timezone())->format('Y-m-d'),
-                Carbon::parse($dateTill, app_timezone())->format('Y-m-d')
+                Carbon::parse($dateTill ?? now_now(), app_timezone())->format('Y-m-d')
             );
             return version_compare($age, $criteria, $operator);
             //            return match ($operator) {

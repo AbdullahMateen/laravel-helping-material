@@ -28,6 +28,17 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/lhm.php' => config_path('lhm.php'),
         ], 'laravel-helping-material-config');
+
+        $this->publishes([
+            __DIR__ . '/migrations' => database_path('migrations'),
+        ], 'laravel-helping-material-migrations');
+
+        $this->loadMigrationsFrom(__DIR__ . '/migrations');
+
+        $this->registerDirectories();
+        $this->registerDirectives();
+        $this->registerMacros();
+        $this->registerCommands();
     }
 
     /**
@@ -49,18 +60,7 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
 
         $this->app['router']->aliasMiddleware('authorize', AuthorizationMiddleware::class);
 
-        $this->loadMigrationsFrom(__DIR__ . '/migrations');
-        $this->publishes([
-            __DIR__ . '/migrations' => database_path('migrations'),
-        ], 'laravel-helping-material-migrations');
-
         $this->registerFacades();
-        $this->registerCommands();
-
-        $this->registerDirectories();
-        $this->registerDirectives();
-
-        $this->registerMacros();
     }
 
     /**
@@ -68,10 +68,13 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
      */
     private function registerDirectories(): void
     {
-        $folder = config('lhm.storage.folder');
-        if (!File::exists(public_path($folder))) {
-            File::makeDirectory(public_path($folder), 0777, true);
+        $folder = (string) config('lhm.storage.folder', 'storage');
+
+        if ($folder === '') {
+            return;
         }
+
+        File::ensureDirectoryExists(public_path($folder));
     }
 
     /**
@@ -108,7 +111,7 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
      */
     private function registerFacades(): void
     {
-        $this->app->bind('MediaService', function () {
+        $this->app->singleton('MediaService', function () {
             return new MediaService();
         });
     }
@@ -118,6 +121,10 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
      */
     private function registerCommands(): void
     {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
         $this->app->singleton(
             'command.lhm.publish',
             function ($app) {
@@ -125,19 +132,20 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
             }
         );
         $this->commands(array_filter([
-            $this->app->version()[0] >= 10 ? LhmMakeEnumCommand::class : null,
+            version_compare($this->app->version(), '10.0.0', '>=') ? LhmMakeEnumCommand::class : null,
             LhmMakeModelCommand::class,
             'command.lhm.publish',
         ]));
     }
 
-    private function registerMacros()
+    private function registerMacros(): void
     {
         $this->generalMacros();
         $this->authMacros();
     }
 
-    private function generalMacros() {
+    private function generalMacros(): void
+    {
         $that = $this;
 
         Response::macro('response', function (
@@ -163,7 +171,7 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
         });
     }
 
-    private function authMacros()
+    private function authMacros(): void
     {
         Response::macro('unauthenticated', function (
             $message = 'unauthenticated',
