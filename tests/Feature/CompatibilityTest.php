@@ -29,4 +29,9 @@ final class CompatibilityTest extends TestCase
         self::assertTrue($reflection->hasProperty('basepath'));
         self::assertTrue($reflection->hasProperty('prefix'));
     }
+
+    public function test_media_service_no_longer_relies_on_media_traits(): void
+    {
+        self::assertSame([], (new ReflectionClass(MediaService::class))->getTraitNames());
+    }
 }

@@ -44,7 +44,12 @@
                 "AbdullahMateen\\LaravelHelpingMaterial\\LaravelHelpingMaterialServiceProvider"
             ],
             "aliases": {
-                "MediaService": "AbdullahMateen\\LaravelHelpingMaterial\\Facades\\MediaServiceFacade"
+                "ArchiveService": "AbdullahMateen\\LaravelHelpingMaterial\\Services\\Media\\ArchiveService",
+                "AudioService": "AbdullahMateen\\LaravelHelpingMaterial\\Services\\Media\\AudioService",
+                "DocumentService": "AbdullahMateen\\LaravelHelpingMaterial\\Services\\Media\\DocumentService",
+                "MediaService": "AbdullahMateen\\LaravelHelpingMaterial\\Facades\\MediaServiceFacade",
+                "ImageService": "AbdullahMateen\\LaravelHelpingMaterial\\Services\\Media\\ImageService",
+                "VideoService": "AbdullahMateen\\LaravelHelpingMaterial\\Services\\Media\\VideoService"
             }
         }
     },

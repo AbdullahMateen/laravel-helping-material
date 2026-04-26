@@ -111,8 +111,12 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
      */
     private function registerFacades(): void
     {
-        $this->app->singleton('MediaService', function () {
+        $this->app->bind(MediaService::class, function () {
             return new MediaService();
+        });
+
+        $this->app->bind('MediaService', function ($app) {
+            return $app->make(MediaService::class);
         });
     }
 

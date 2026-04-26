@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Total Downloads](https://img.shields.io/packagist/dt/abdullah-mateen/laravel-helping-metarial.svg)](https://packagist.org/packages/abdullah-mateen/laravel-helping-metarial)
+[![Total Downloads](https://img.shields.io/packagist/dt/abdullah-mateen/laravel-helping-material.svg)](https://packagist.org/packages/abdullah-mateen/laravel-helping-material)
 [![GitHub issues](https://img.shields.io/github/issues/AbdullahMateen/laravel-helping-material.svg)](https://github.com/AbdullahMateen/laravel-helping-material/issues)
 [![GitHub stars](https://img.shields.io/github/stars/AbdullahMateen/laravel-helping-material.svg?style=social)](https://github.com/AbdullahMateen/laravel-helping-material)
 [![GitHub forks](https://img.shields.io/github/forks/AbdullahMateen/laravel-helping-material.svg?style=social)](https://github.com/AbdullahMateen/laravel-helping-material/network)
@@ -10,277 +10,552 @@
 
 </div>
 
-# <p align="center">Laravel Helping Material</p>
+# Laravel Helping Material
 
-> This package is a collection of useful tools for Laravel developers. It includes helper functions for common tasks, enums for defining constants, helpful traits for models and controllers, laravel validation rules for custom validations, and a simple media upload library for handling file uploads. This package aims to make Laravel development easier and faster.
+Laravel Helping Material is a Laravel utility package that bundles common helpers, enums, model traits, API response helpers, middleware, resources, and a class-based media upload service.
 
-## Table of contents
+It is designed for Laravel applications that need reusable project scaffolding plus simple media storage flows such as profile images, documents, temporary uploads, and database-backed media records.
 
-- [Getting Started](#getting-started)
-- [Prerequisites](#prerequisites)
+## Table Of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
 - [Installation](#installation)
-- [Publish](#publish)
-- [Usage](#usage)
-    - [Enums](#enums)
-    - [Helpers](#helpers)
-    - [Interface](#interface)
-    - [Middleware](#middleware)
-    - [Models](#models)
-    - [Resources](#resources)
-    - [Resources](#resources)
-    - [Rules](#rules)
-    - [Simple Media Library](#simple-media-library)
-- [Authors](#author)
+- [Configuration](#configuration)
+- [Publishing Files](#publishing-files)
+- [Artisan Commands](#artisan-commands)
+- [Helper Functions](#helper-functions)
+- [Enums](#enums)
+- [Models](#models)
+- [Middleware](#middleware)
+- [Blade Directives](#blade-directives)
+- [Response Macros](#response-macros)
+- [Media Service](#media-service)
+- [Interfaces](#interfaces)
+- [Resources](#resources)
+- [Validation Rules](#validation-rules)
+- [Examples](#examples)
+- [Author](#author)
 - [License](#license)
 
-## Getting Started
+## Features
 
-This package offers a variety of features to enhance your web development experience. Some of the features are:
+- Helper functions for application config, auth, files, dates, numbers, strings, arrays, pagination, XML, and impersonation.
+- PHP backed enums for user, media, temporal, notification, boolean, and status values.
+- Model base classes and model traits for common Laravel model behavior.
+- `authorize` middleware for role-level route authorization.
+- API response trait and response macros for consistent JSON responses.
+- Blade directives for displaying validation errors.
+- Class-based `MediaService` plus typed services: `ImageService`, `AudioService`, `VideoService`, `DocumentService`, and `ArchiveService`.
+- Optional publish command for copying config, enums, helpers, middleware, migrations, models, resources, services, and traits into your app.
 
-- Enums: Define and use enum types in your code for better readability and consistency.
-- Helpers: Use handy functions and macros to simplify common tasks and operations.
-- Colors Interface: A list of colors classes and RGBA codes.
-- Authorization Middleware: Protect your routes and controllers with customizable authorization logic.
-- General Model: Use a base model class that provides common functionality and traits for your models.
-- Helpful Css: Apply some useful css classes to your elements (if you are not using tailwind).
-- Validation Rules: Validate your data with custom rules and messages.
-- Some Helpful Traits: Use traits to add behavior and functionality to your enums, classes and controllers.
-- Simple Media Library: Manage your media files and attachments with ease.
+## Requirements
 
-This package is designed to help you with your web development projects. We hope you find it useful and enjoyable.
+- PHP `^8.1`.
+- Laravel `^10.0`, `^11.0`, `^12.0`, or `^13.0`.
+- PHP extensions: `curl`, `fileinfo`, `gd`, `intl`, `json`, and `simplexml`.
+- `intervention/image` `^3.3`.
 
-## Prerequisites
-
-[(Back to top)](#table-of-contents)
-
-This project requires PHP `(version 8.1 or later)` you can use [xampp](https://www.apachefriends.org/), [wamp](https://www.wampserver.com/en/), [laragon](https://laragon.org/index.html) or any other option that is suitable to you, they are really easy to install. To make sure you have them available on your machine, try running the following command.
-
-```sh
-$ php -v
-8.1.6
-```
+The package is compatible with PHP 8.4 and PHP 8.5, and the test suite has been verified on PHP 8.5.
 
 ## Installation
 
-[(Back to top)](#table-of-contents)
-
-Require this package with composer using the following command:
+Install the package with Composer:
 
 ```sh
 composer require abdullah-mateen/laravel-helping-material
 ```
 
-## Publish
+Laravel package auto-discovery registers the service provider automatically. If package discovery is disabled in your project, register the provider manually:
 
-[(Back to top)](#table-of-contents)
+```php
+// config/app.php
+'providers' => [
+    AbdullahMateen\LaravelHelpingMaterial\LaravelHelpingMaterialServiceProvider::class,
+],
+```
 
-You can use the publish command to publish all the files. This will allow you to modify the files as you wish. To publish your files, you need to execute this command in `PowerShell`, `cmd` or any other `terminal`.
+After installation, publish the storage symlink if you store public files:
+
+```sh
+php artisan storage:link
+```
+
+## Configuration
+
+Publish the config when you need to customize models, strict mode, storage, or media extensions:
+
+```sh
+php artisan vendor:publish --tag=laravel-helping-material-config
+```
+
+The config file is published to `config/lhm.php`.
+
+Important config keys:
+
+```php
+return [
+    'api' => [
+        'response_keys' => [
+            'snake_case' => env('LHM_SNAKE_CASE', false),
+        ],
+    ],
+
+    'models' => [
+        'should_be_strict' => env('LHM_SHOULD_BE_STRICT', false),
+        'user' => App\Models\User::class,
+    ],
+
+    'storage' => [
+        'folder' => env('STORAGE_FOLDER', 'storage'),
+        'shared' => [
+            'enabled' => env('SHARED_STORAGE', false),
+            'path' => env('SHARED_STORAGE_PATH', null),
+        ],
+    ],
+
+    'media_service' => [
+        'model' => AbdullahMateen\LaravelHelpingMaterial\Models\Media::class,
+        'media_disk_enum' => AbdullahMateen\LaravelHelpingMaterial\Enums\Media\MediaDiskEnum::class,
+        'extensions' => [
+            'image' => ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'svg', 'webp'],
+            'audio' => ['mp3', 'aac', 'ogg', 'flac', 'alac', 'wav', 'aiff', 'dsd', 'pcm'],
+            'video' => ['mp3', 'mp4', 'mov', 'webm'],
+            'document' => ['pdf', 'doc', 'docx', 'csv', 'xlx', 'txt', 'pptx', 'divx'],
+            'archive' => ['7z', 's7z', 'apk', 'jar', 'rar', 'tar.gz', 'tgz', 'tarZ', 'tar', 'zip', 'zipx'],
+        ],
+    ],
+];
+```
+
+## Publishing Files
+
+The package supports Laravel vendor publishing and its own interactive publish command.
+
+Publish config only:
+
+```sh
+php artisan vendor:publish --tag=laravel-helping-material-config
+```
+
+Publish migrations only:
+
+```sh
+php artisan vendor:publish --tag=laravel-helping-material-migrations
+```
+
+Run the interactive package publisher:
 
 ```sh
 php artisan lhm:publish
 ```
 
-Once you run the above command it will display a menu of files to publish. You can select one or more files by typing their numbers separated by commas, as shown below:
+`lhm:publish` shows a menu and lets you publish one or more groups.
 
-[<img width="700px" alt="Icone VS-Code" src="./images/lhm-publish-selection.png"/>](./images/lhm-publish-selection.png)
+| Option | What it publishes | Destination |
+| --- | --- | --- |
+| `All` | Every supported publish group | Multiple paths |
+| `Config` | `lhm.php` config | `config/lhm.php` |
+| `Enums` | media and user enum stubs | `app/Enums` |
+| `Exceptions` | API response exception handler stub | `app/Exceptions` |
+| `Helpers` | custom helper file stub | `app/Helpers/custom.php` |
+| `Middlewares` | authorization middleware stub | `app/Http/Middleware` |
+| `Migrations` | package migrations | `database/migrations` |
+| `Models` | extended model and media model stubs | `app/Models` |
+| `Resources` | Sass utility resources | `resources/sass` |
+| `Services` | app media service extension stub | `app/Services/Media` |
+| `Traits` | user notification trait stub | `app/Traits` |
 
-## Usage
+## Artisan Commands
 
-### Enums
+### `php artisan lhm:publish`
 
-[(Back to top)](#table-of-contents)
+Publishes package stubs and resources into your application through an interactive checklist.
 
-This package is using `php` default enums which are available from `(PHP 8 >= 8.1.0)` onward.
-
-| Dir   | Enums                                         | Description                                                                                                                                                                    |
-|-------|-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Media | MediaDiskEnum<br/>MediaTypeEnum               | Both `enums` are related to `Media` model which is also included in this package.<br/>Mostly used in [`Simple Media Library`](#simple-media-library) which is documented below |
-| User  | AccountStatusEnum<br/>GenderEnum<br/>RoleEnum | These enums are related to `User` model which are mostly/commonly used wherever there is a user                                                                                |
-|       | StatusEnum                                    | General `Status` enum like to manage active/inactive statuses of a model                                                                                                       |
-
-#### Example
-
-```php
-use \AbdullahMateen\LaravelHelpingMaterial\Enums\User\AccountStatusEnum;
-use \AbdullahMateen\LaravelHelpingMaterial\Enums\User\GenderEnum;
-use \AbdullahMateen\LaravelHelpingMaterial\Enums\User\RoleEnum;
-
-class User extends Authenticatable {
-    
-    protected $casts = [
-        'role'   => RoleEnum::class,
-        'gender' => GenderEnum::class,
-        'status' => AccountStatusEnum::class,
-    ];
-    
-    // ...
-}
-
-User::create([
-    'name'     => 'John Doe',
-    'email'    => 'example@example.com',
-    'password' => Hash::male('password'),
-    'role'     => RoleEnum::Customer, // or you can use its value RoleEnum::Customer->value
-    'gender'   => GenderEnum::Male, // or you can use its value GenderEnum::Male->value
-    'status'   => AccountStatusEnum::Unverified, // or you can use its value AccountStatusEnum::Unverified->value
-]);
+```sh
+php artisan lhm:publish
 ```
 
-> <span style="color: orange">**Note:** if you are going to use these enums as values then you don't need to cast them to enums.</span>
+Use this when you want local editable copies of package files.
 
-### Helpers
+### `php artisan make:lhm-enum`
 
-[(Back to top)](#table-of-contents)
+Creates an enum using the package enum stubs. It extends Laravel's enum generator.
 
-*<small style="color: #f00;font-weight: bold;">list of helper functions will be available soon.</small>* For now you can have a look at available functions [here](https://github.com/AbdullahMateen/laravel-helping-material/tree/1.x/src/Helpers)
+```sh
+php artisan make:lhm-enum User/StatusEnum
+php artisan make:lhm-enum User/RoleEnum --int
+php artisan make:lhm-enum Billing/InvoiceStatusEnum --string
+```
 
-The helper functions are not automatically registered by default. To utilize these helper functions, you must first publish them using the command `php artisan lhm:publish` and select the helper functions options. Afterward, navigate to your `composer.json` file and perform the following steps:
+### `php artisan make:lhm-model`
+
+Creates a model using the package model stub. It extends Laravel's model generator.
+
+```sh
+php artisan make:lhm-model Product
+php artisan make:lhm-model Product -mfs
+```
+
+## Helper Functions
+
+All package helper functions are documented in [HELPER_FUNCTIONS.md](./HELPER_FUNCTIONS.md).
+
+The package autoloads its own helpers through Composer. If you publish your own helper file with `php artisan lhm:publish`, add that custom file to your application `composer.json`:
 
 ```json
 {
   "autoload": {
     "files": [
-      "src/Helpers/helpers.php"
+      "app/Helpers/custom.php"
     ]
   }
 }
 ```
 
-Finally, run the command `composer dump-autoload` or its shorthand `composer du` in your current directory terminal.
+Then refresh Composer autoloading:
 
-#### Example
+```sh
+composer dump-autoload
+```
+
+Basic helper examples:
 
 ```php
 $user = auth_user();
-
-$routeName = route_url_to_name('https://example.com') // will return 'index'
-
-if (is_current_route('dashboard')) {
-    // do something
-}
-
-// and much more ...
+$title = webpage_title('Dashboard');
+$route = route_url_to_name('https://example.test/dashboard');
+$formatted = display_number(12500.5);
 ```
 
-### Interface
+## Enums
 
-[(Back to top)](#table-of-contents)
+The package includes reusable PHP enums.
 
-| Interface       | Description                                                                                                                                                                                          |
-|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| ColorsInterface | This interface contain a list of `color classes` and `color codes` of those classes for this you also need `sass` file which contain those classes.<br/>That `sass` file is included in this package |
+| Namespace | Enums |
+| --- | --- |
+| `AbdullahMateen\LaravelHelpingMaterial\Enums` | `BooleanEnum`, `StatusEnum` |
+| `AbdullahMateen\LaravelHelpingMaterial\Enums\Media` | `MediaDiskEnum`, `MediaTypeEnum` |
+| `AbdullahMateen\LaravelHelpingMaterial\Enums\Notification` | `StatusEnum` |
+| `AbdullahMateen\LaravelHelpingMaterial\Enums\Temporal` | `DayEnum`, `MonthEnum`, `TimeUnitEnum` |
+| `AbdullahMateen\LaravelHelpingMaterial\Enums\User` | `AccountStatusEnum`, `GenderEnum`, `RoleEnum`, `TitleEnum` |
 
-#### Example
+Example enum casts:
 
 ```php
-use \AbdullahMateen\LaravelHelpingMaterial\Interfaces\ColorsInterface;
-use \AbdullahMateen\LaravelHelpingMaterial\Enums\User\AccountStatusEnum;
+use AbdullahMateen\LaravelHelpingMaterial\Enums\User\AccountStatusEnum;
+use AbdullahMateen\LaravelHelpingMaterial\Enums\User\GenderEnum;
+use AbdullahMateen\LaravelHelpingMaterial\Enums\User\RoleEnum;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Example implements ColorsInterface {
-    
-    protected $casts = [
-        'status' => AccountStatusEnum::class,
-    ];
-    
-    public function getColorClass() {
-        return 'bg-' . self::SUCCESS_CLASS // bg-success: for background colors
-        // return self::SUCCESS_CLASS // success: for text colors
+class User extends Authenticatable
+{
+    protected function casts(): array
+    {
+        return [
+            'role' => RoleEnum::class,
+            'gender' => GenderEnum::class,
+            'status' => AccountStatusEnum::class,
+        ];
     }
-    
-    public function getColorCode() {
-        return self::SUCCESS // #28a745
-    }
-    
-    public function getStatusColor() {
-        return $this->status->color(); // Using Enum 'color' function
-    }
-    
 }
 ```
 
-> you can see another examples in-use in Enums [here](https://github.com/AbdullahMateen/laravel-helping-material/tree/1.x/src/Helpers)
-
-### Middleware
-
-[(Back to top)](#table-of-contents)
-
-| Middleware              | usage                      | Description                                                       |
-|-------------------------|----------------------------|-------------------------------------------------------------------|
-| AuthorizationMiddleware | `authorize:1001,3001,5001` | This middleware is used to authorize users based on their levels. |
-
-The middleware is pre-registered, but if you have published it using the command `php artisan lhm:publish` and selected the middleware option, you will receive an overridden file for the same middleware. In such cases, it's necessary to manually register the middleware. To do so, follow these steps in the `app\Http\Kernel.php` file:
+Example enum helpers:
 
 ```php
-  // ...
-
-  protected $routeMiddleware = [
-      // ...
-    
-      'custom-authorize' => \App\Http\Middleware\Custom\AuthorizationMiddleware::class,
-  ];
+RoleEnum::Customer->value;
+RoleEnum::toArray();
+RoleEnum::toFullArray();
+RoleEnum::fromName('Customer');
 ```
 
-#### Example
+## Models
+
+The package includes:
+
+- `ExtendedModel`: a base Eloquent model with common package traits.
+- `AuthenticatableExtendedModel`: a base authenticatable model with common package traits.
+- `Media`: the default media database model.
+- `Notification`: the default notification model.
+
+Use the included `Media` model by default, or override it in `config/lhm.php`:
 
 ```php
-// web.php File
-
-use \AbdullahMateen\LaravelHelpingMaterial\Enums\User\RoleEnum;
-
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('authorize:1001,3001')
-
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('authorize:' . RoleEnum::column('value', 'admins', true))
-
-// if you have published it 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('custom-authorize:1001,3001')
+'media_service' => [
+    'model' => App\Models\Media::class,
+],
 ```
 
-> take a look at AuthorizationMiddleware [here](https://github.com/AbdullahMateen/laravel-helping-material/tree/1.x/src/Helpers)
+If you publish the model stubs, you can customize the app-level models:
 
-### Models
+```sh
+php artisan lhm:publish
+# choose Models
+```
 
-[(Back to top)](#table-of-contents)
+## Middleware
 
-### Resources
+The package registers `authorize` middleware automatically.
 
-[(Back to top)](#table-of-contents)
+```php
+use AbdullahMateen\LaravelHelpingMaterial\Enums\User\RoleEnum;
+use Illuminate\Support\Facades\Route;
 
-### Rules
+Route::get('/admin', AdminController::class)
+    ->middleware('authorize:1001,3001');
 
-[(Back to top)](#table-of-contents)
+Route::get('/staff', StaffController::class)
+    ->middleware('authorize:' . RoleEnum::column('value', 'admins', true));
+```
 
-### Simple Media Library
+If you publish and customize the middleware, register your custom alias in your Laravel application and use that alias instead.
 
-[(Back to top)](#table-of-contents)
+## Blade Directives
 
-[//]: # (## Contributing)
+The service provider registers two validation helper directives.
 
-[//]: # ()
-[//]: # ([&#40;Back to top&#41;]&#40;#table-of-contents&#41;)
+```blade
+<input name="email" class="form-control @hasError('email')">
+@showError('email')
+```
 
-[//]: # (Please read [CONTRIBUTING.md]&#40;CONTRIBUTING.md&#41; for details on our code of conduct, and the process for submitting pull requests to us.)
+For multiple fields:
 
-[//]: # ()
-[//]: # (1. Fork it!)
+```blade
+<input name="password" class="form-control @hasError('password,password_confirmation')">
+@showError('password,password_confirmation')
+```
 
-[//]: # (2. Create your feature branch: `git checkout -b my-new-feature`)
+## Response Macros
 
-[//]: # (3. Add your changes: `git add .`)
+The package registers response macros for common API responses.
 
-[//]: # (4. Commit your changes: `git commit -am 'Add some feature'`)
+```php
+return response()->response(
+    response: 200,
+    message: 'Profile updated',
+    data: ['user' => $user],
+);
 
-[//]: # (5. Push to the branch: `git push origin my-new-feature`)
+return response()->everythingOK('Saved successfully');
+return response()->invalid('Invalid data provided');
+return response()->unauthenticated();
+return response()->loginAttemptFailed();
+return response()->authNotFound();
+return response()->refreshToken(['token' => $token]);
+return response()->loggedIn(['user' => $user]);
+return response()->loggedOut();
+```
 
-[//]: # (6. Submit a pull request :sunglasses:)
+Set `LHM_SNAKE_CASE=true` when you want API response keys converted to snake_case.
+
+## Media Service
+
+The media service has two layers:
+
+- `MediaService`: the full chainable service.
+- Typed convenience services: `ImageService`, `AudioService`, `VideoService`, `DocumentService`, and `ArchiveService`.
+
+Typed services validate the resolved file type before storing. For example, `ImageService` only accepts images and `DocumentService` only accepts documents.
+
+### Storage vs Database
+
+- `store()` writes to the filesystem only.
+- `persist()` writes to the filesystem and inserts media rows in the database.
+- `MediaService::store()->save($model)` gives chainable control and writes database rows.
+- Passing `null` as the model stores a database row without a `mediaable` relation.
+
+### Store A Profile Picture And Save It To DB
+
+```php
+use AbdullahMateen\LaravelHelpingMaterial\Services\Media\ImageService;
+use Illuminate\Http\Request;
+
+public function updateAvatar(Request $request): array
+{
+    $request->validate([
+        'avatar' => ['required', 'image', 'max:2048'],
+    ]);
+
+    return ImageService::persist(
+        file: $request->file('avatar'),
+        model: $request->user(),
+        path: 'users/'.$request->user()->id.'/profile',
+        filename: 'avatar',
+        disk: 'public',
+    );
+}
+```
+
+### Store A File Without A Model
+
+```php
+use AbdullahMateen\LaravelHelpingMaterial\Services\Media\DocumentService;
+
+$result = DocumentService::store(
+    file: $request->file('document'),
+    path: 'uploads/documents',
+    disk: 'public',
+);
+```
+
+### Store A DB Row Without A Model Relation
+
+```php
+$result = DocumentService::persist(
+    file: $request->file('document'),
+    model: null,
+    path: 'unattached/documents',
+    disk: 'public',
+);
+```
+
+### Store Multiple Files
+
+```php
+use AbdullahMateen\LaravelHelpingMaterial\Services\Media\MediaService;
+
+$media = app(MediaService::class)
+    ->filesStore($request->file('attachments'), 'tickets/'.$ticket->id, null, 'public')
+    ->save($ticket);
+
+$data = $media->getData()->values()->all();
+$ids = $media->getIds(false);
+```
+
+### Generate An Image Thumbnail
+
+```php
+$media = ImageService::service($request->file('avatar'))
+    ->thumbnail(fn ($image) => $image->scale(width: 320))
+    ->store('users/'.$user->id.'/profile', 'avatar', 'public')
+    ->save($user);
+```
+
+### Store Temporarily, Then Move Later
+
+```php
+$temp = DocumentService::persist(
+    file: $request->file('document'),
+    model: null,
+    path: 'temporary/documents',
+    disk: 'public',
+);
+
+$media = app(MediaService::class)
+    ->model($user)
+    ->move(
+        values: $temp['ids'],
+        fromDisk: 'public',
+        fromPath: 'temporary/documents',
+        toDisk: 'public',
+        toPath: 'users/'.$user->id.'/documents',
+        column: 'id',
+    );
+```
+
+### Move From One Disk To Another
+
+```php
+$media = app(MediaService::class)
+    ->model($user)
+    ->move(
+        values: [1, 2, 3],
+        fromDisk: 'public',
+        fromPath: 'users/'.$user->id.'/documents',
+        toDisk: 's3',
+        toPath: 'users/'.$user->id.'/documents',
+        column: 'id',
+    );
+```
+
+### Replace Existing Media
+
+```php
+$media = DocumentService::service($request->file('document'))
+    ->store('replacement/documents', null, 'public')
+    ->update($mediaId, 'public', 'id');
+```
+
+### Delete Media
+
+```php
+// Delete database rows and physical files.
+app(MediaService::class)->destroy([1, 2, 3], 'id', true);
+
+// Delete database rows only.
+app(MediaService::class)->destroy([1, 2, 3], 'id', false);
+
+// Delete a physical file only.
+app(MediaService::class)->remove('report.pdf', 'uploads/documents', 'public');
+```
+
+### Typed Service Quick Reference
+
+```php
+ImageService::store($file, 'images', null, 'public');
+AudioService::store($file, 'audio', null, 'public');
+VideoService::store($file, 'videos', null, 'public');
+DocumentService::store($file, 'documents', null, 'public');
+ArchiveService::store($file, 'archives', null, 'public');
+```
+
+See the full scenario file at [examples/media-service-api-examples.php](./examples/media-service-api-examples.php).
+
+## Interfaces
+
+`ColorsInterface` exposes color class and color code constants for consistent enum/UI color handling.
+
+```php
+use AbdullahMateen\LaravelHelpingMaterial\Interfaces\ColorsInterface;
+
+class Badge implements ColorsInterface
+{
+    public function className(): string
+    {
+        return 'bg-'.self::SUCCESS_CLASS;
+    }
+
+    public function colorCode(): string
+    {
+        return self::SUCCESS;
+    }
+}
+```
+
+## Resources
+
+The package ships Sass utilities for colors, spacing, sizing, borders, and positioning. Publish them with:
+
+```sh
+php artisan lhm:publish
+# choose Resources
+```
+
+They are copied to `resources/sass`.
+
+## Validation Rules
+
+The package includes `AbdullahMateen\LaravelHelpingMaterial\Rules\Throttle`.
+
+```php
+use AbdullahMateen\LaravelHelpingMaterial\Rules\Throttle;
+
+$request->validate([
+    'email' => ['required', 'email', new Throttle()],
+]);
+```
+
+## Examples
+
+- Full media API examples: [examples/media-service-api-examples.php](./examples/media-service-api-examples.php)
+- Full helper reference: [HELPER_FUNCTIONS.md](./HELPER_FUNCTIONS.md)
 
 ## Author
 
-[(Back to top)](#table-of-contents)
-
-* **[Abdullah Mateen](https://github.com/AbdullahMateen/laravel-helping-material)** - *abdulahmateen101@gmail.com* 
+**[Abdullah Mateen](https://github.com/AbdullahMateen/laravel-helping-material)** - abdulahmateen101@gmail.com
 
 ## License
 
-[(Back to top)](#table-of-contents)
-
-The MIT License (MIT) 2024 - [Abdullah Mateen](https://github.com/AbdullahMateen/laravel-helping-material). Please have a look at the [LICENSE.md](./LICENSE) for more details.
+The MIT License (MIT) 2024 - [Abdullah Mateen](https://github.com/AbdullahMateen/laravel-helping-material). See [LICENSE](./LICENSE) for details.
