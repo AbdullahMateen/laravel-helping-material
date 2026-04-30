@@ -3,8 +3,12 @@
 namespace Tests\Feature;
 
 use AbdullahMateen\LaravelHelpingMaterial\Commands\LhmPublishCommand;
+use AbdullahMateen\LaravelHelpingMaterial\LaravelHelpingMaterialServiceProvider;
 use AbdullahMateen\LaravelHelpingMaterial\Models\AuthenticatableExtendedModel;
+use AbdullahMateen\LaravelHelpingMaterial\Models\Media;
 use AbdullahMateen\LaravelHelpingMaterial\Services\Media\MediaService;
+use Illuminate\Config\Repository;
+use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
@@ -33,5 +37,44 @@ final class CompatibilityTest extends TestCase
     public function test_media_service_no_longer_relies_on_media_traits(): void
     {
         self::assertSame([], (new ReflectionClass(MediaService::class))->getTraitNames());
+    }
+
+    public function test_package_config_keeps_published_nested_values(): void
+    {
+        $app = new Container();
+        $app->instance('config', new Repository([
+            'lhm' => [
+                'models' => [
+                    'should_be_strict' => true,
+                ],
+                'storage' => [
+                    'folder' => 'uploads',
+                ],
+            ],
+        ]));
+
+        (new LaravelHelpingMaterialServiceProvider($app))->register();
+
+        self::assertTrue($app->make('config')->get('lhm.models.should_be_strict'));
+        self::assertSame('uploads', $app->make('config')->get('lhm.storage.folder'));
+        self::assertSame(Media::class, $app->make('config')->get('lhm.media_service.model'));
+    }
+
+    public function test_package_config_replaces_list_values_from_published_config(): void
+    {
+        $app = new Container();
+        $app->instance('config', new Repository([
+            'lhm' => [
+                'media_service' => [
+                    'extensions' => [
+                        'image' => ['avif'],
+                    ],
+                ],
+            ],
+        ]));
+
+        (new LaravelHelpingMaterialServiceProvider($app))->register();
+
+        self::assertSame(['avif'], $app->make('config')->get('lhm.media_service.extensions.image'));
     }
 }

@@ -20,20 +20,34 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
 {
     use ApiResponseTrait;
 
+    private const CONFIG_KEY = 'lhm';
+
+    private const CONFIG_PATH = __DIR__.'/lhm.php';
+
     /**
      * @return void
      */
     public function boot(): void
     {
-        $this->publishes([
-            __DIR__ . '/lhm.php' => config_path('lhm.php'),
-        ], 'laravel-helping-material-config');
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                self::CONFIG_PATH => config_path('lhm.php'),
+            ], 'laravel-helping-material-config');
 
-        $this->publishes([
-            __DIR__ . '/migrations' => database_path('migrations'),
-        ], 'laravel-helping-material-migrations');
+            $this->publishes([
+                __DIR__ . '/migrations' => database_path('migrations'),
+            ], 'laravel-helping-material-migrations');
+        }
 
         $this->loadMigrationsFrom(__DIR__ . '/migrations');
+
+        Model::shouldBeStrict((bool) config('lhm.models.should_be_strict', false));
+
+        if (function_exists('get_morphs_maps')) {
+            Relation::enforceMorphMap(get_morphs_maps());
+        }
+
+        $this->app['router']->aliasMiddleware('authorize', AuthorizationMiddleware::class);
 
         $this->registerDirectories();
         $this->registerDirectives();
@@ -48,19 +62,62 @@ class LaravelHelpingMaterialServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(
-            __DIR__.'/lhm.php', 'lhm'
-        );
+        $this->mergePackageConfig();
+        $this->registerFacades();
+    }
 
-        Model::shouldBeStrict(config('lhm.models.should_be_strict'));
-
-        if (function_exists('get_morphs_maps')) {
-            Relation::enforceMorphMap(get_morphs_maps());
+    /**
+     * @return void
+     */
+    private function mergePackageConfig(): void
+    {
+        if (method_exists($this->app, 'configurationIsCached') && $this->app->configurationIsCached()) {
+            return;
         }
 
-        $this->app['router']->aliasMiddleware('authorize', AuthorizationMiddleware::class);
+        $config = $this->app->make('config');
 
-        $this->registerFacades();
+        $config->set(
+            self::CONFIG_KEY,
+            $this->mergeConfig(require self::CONFIG_PATH, $config->get(self::CONFIG_KEY, []))
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $defaults
+     * @param array<string, mixed> $overrides
+     *
+     * @return array<string, mixed>
+     */
+    private function mergeConfig(array $defaults, array $overrides): array
+    {
+        foreach ($overrides as $key => $value) {
+            if (
+                is_array($value)
+                && isset($defaults[$key])
+                && is_array($defaults[$key])
+                && $this->isAssociativeArray($value)
+                && $this->isAssociativeArray($defaults[$key])
+            ) {
+                $defaults[$key] = $this->mergeConfig($defaults[$key], $value);
+
+                continue;
+            }
+
+            $defaults[$key] = $value;
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * @param array<mixed> $value
+     *
+     * @return bool
+     */
+    private function isAssociativeArray(array $value): bool
+    {
+        return array_keys($value) !== range(0, count($value) - 1);
     }
 
     /**
